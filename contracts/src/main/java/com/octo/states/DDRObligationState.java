@@ -48,7 +48,7 @@ public class DDRObligationState implements LinearState, OwnableState {
     @NotNull
     @Override
     public List<AbstractParty> getParticipants() {
-        return ImmutableList.of(requester, owner);
+        return ImmutableList.of(requester, owner, issuer);
     }
 
     public Party getRequester() {
@@ -67,6 +67,13 @@ public class DDRObligationState implements LinearState, OwnableState {
         return owner;
     }
 
+    public Party getIssuer() {
+        return issuer;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
 
     public DDRObligationType getType() {
         return type;

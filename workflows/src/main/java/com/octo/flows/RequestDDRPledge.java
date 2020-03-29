@@ -12,7 +12,6 @@ import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
-import net.corda.core.serialization.CordaSerializable;
 import net.corda.core.transactions.LedgerTransaction;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
@@ -25,20 +24,8 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
-import static net.corda.core.contracts.ContractsDSL.requireThat;
-
 public class RequestDDRPledge {
 
-    @CordaSerializable
-    private static class DDRPledgenfo {
-        private final Amount<Currency> amount;
-        private final Date requesterDate;
-
-        private DDRPledgenfo(Amount<Currency> amount, Date requesterDate) {
-            this.amount = amount;
-            this.requesterDate = requesterDate;
-        }
-    }
     // ******************
     // * Initiator flow *
     // ******************
@@ -64,41 +51,31 @@ public class RequestDDRPledge {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            // Initiator flow logic goes here.
-            final DDRPledgenfo ddrPledgenfo = new DDRPledgenfo(amount, requesterDate);
-
             final Party centralBank = getServiceHub().getNetworkMapCache().getPeerByLegalName(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
             final FlowSession centralBankSession = initiateFlow(centralBank);
 
-            centralBankSession.send(ddrPledgenfo);
+            TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
 
-            final SecureHash txId = subFlow(new CheckTransactionAndSignFlow(centralBankSession, SignTransactionFlow.Companion.tracker())).getId();
+            String externalId = getOurIdentity().toString().concat(" Pledge " + requesterDate.toString());
+            DDRObligationState ddrObligationState = new DDRObligationState(centralBank, getOurIdentity(), requesterDate,
+                    amount, getOurIdentity(), DDRObligationType.PLEDGE, DDRObligationStatus.REQUEST, externalId);
 
-            return subFlow(new ReceiveFinalityFlow(centralBankSession, txId));
+            final List<PublicKey> requiredSigners = ImmutableList.of(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
+
+            txBuilder.addOutputState(ddrObligationState, DDRObligationContract.ID)
+                    .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRPledge(), requiredSigners);
+
+            txBuilder.verify(getServiceHub());
+
+            final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
+
+            final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableList.of(centralBankSession)
+                    , CollectSignaturesFlow.Companion.tracker()));
+
+
+            return subFlow(new FinalityFlow(fullySignedTx, ImmutableSet.of(centralBankSession)));
         }
 
-        private class CheckTransactionAndSignFlow extends SignTransactionFlow {
-
-            public CheckTransactionAndSignFlow(@NotNull FlowSession otherSideSession, @NotNull ProgressTracker progressTracker) {
-                super(otherSideSession, progressTracker);
-            }
-
-            @Override
-            protected void checkTransaction(@NotNull SignedTransaction stx) throws FlowException {
-                try {
-                    LedgerTransaction ltx = stx.toLedgerTransaction(getServiceHub(), false);
-                    DDRObligationState output = (DDRObligationState) ltx.getOutputStates().get(0);
-                    requireThat(require -> {
-                        require.using("Amount has been changed", output.getAmount().compareTo(amount) == 0);
-                        require.using("Requester date has been changed", output.getRequesterDate().compareTo(requesterDate) == 0);
-                        return null;
-                    });
-
-                } catch (SignatureException e) {
-                    throw new FlowException("Transaction had invalid signature.");
-                }
-            }
-        }
     }
 
     // ******************
@@ -115,37 +92,27 @@ public class RequestDDRPledge {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            // Responder flow logic goes here.
-            DDRPledgenfo ddrPledgenfo = counterPartySession.receive(DDRPledgenfo.class).unwrap(info -> {
-                // Check
-                return info;
-            });
+            final SecureHash txId = subFlow(new CheckTransactionAndSignFlow(counterPartySession, SignTransactionFlow.Companion.tracker())).getId();
 
-            final Party pledgingBankParty = counterPartySession.getCounterparty();
-
-            TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
-
-            String externalId = pledgingBankParty.toString().concat(" Pledge" + ddrPledgenfo.requesterDate.toString());
-            DDRObligationState ddrObligationState = new DDRObligationState(getOurIdentity(), pledgingBankParty,ddrPledgenfo.requesterDate,
-                    ddrPledgenfo.amount, pledgingBankParty, DDRObligationType.PLEDGE, DDRObligationStatus.REQUEST, externalId);
-
-            final List<PublicKey> requiredSigners = ImmutableList.of(getOurIdentity().getOwningKey(), pledgingBankParty.getOwningKey());
-
-            txBuilder.addOutputState(ddrObligationState, DDRObligationContract.ID)
-                    .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRPledge(), requiredSigners);
-
-            txBuilder.verify(getServiceHub());
-
-            final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
-            //counterPartySession.send(partSignedTx);
-
-            final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableList.of(counterPartySession)
-            ,CollectSignaturesFlow.Companion.tracker()));
-
-
-            SignedTransaction finalityTx = subFlow(new FinalityFlow(fullySignedTx, ImmutableSet.of(counterPartySession)));
-            return finalityTx;
+            return subFlow(new ReceiveFinalityFlow(counterPartySession, txId));
         }
+
+        private class CheckTransactionAndSignFlow extends SignTransactionFlow {
+
+            public CheckTransactionAndSignFlow(@NotNull FlowSession otherSideSession, @NotNull ProgressTracker progressTracker) {
+                super(otherSideSession, progressTracker);
+            }
+
+            @Override
+            protected void checkTransaction(@NotNull SignedTransaction stx) throws FlowException {
+                try {
+                    LedgerTransaction ltx = stx.toLedgerTransaction(getServiceHub(), false);
+                } catch (SignatureException e) {
+                    throw new FlowException("Transaction had invalid signature.");
+                }
+            }
+        }
+
     }
 
 }
