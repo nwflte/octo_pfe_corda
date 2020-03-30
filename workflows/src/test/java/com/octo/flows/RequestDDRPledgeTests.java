@@ -87,7 +87,7 @@ public class RequestDDRPledgeTests {
         network.runNetwork();
 
         SignedTransaction signedTx = future.get();
-        signedTx.verifySignaturesExcept(a.getInfo().getLegalIdentities().get(0).getOwningKey());
+        signedTx.verifySignaturesExcept(bc.getInfo().getLegalIdentities().get(0).getOwningKey());
     }
 
     @Test
@@ -98,11 +98,11 @@ public class RequestDDRPledgeTests {
         network.runNetwork();
 
         SignedTransaction signedTx = future.get();
-        signedTx.verifySignaturesExcept(bc.getInfo().getLegalIdentities().get(0).getOwningKey());
+        signedTx.verifySignaturesExcept(a.getInfo().getLegalIdentities().get(0).getOwningKey());
     }
 
     @Test
-    public void recordedTransactionHasNoInputsAndASingleOutputTheInputIOU() throws Exception {
+    public void recordedTransactionHasNoInputsAndASingleOutput() throws Exception {
         Amount<Currency> amount = new Amount<Currency>(1, Currency.getInstance("MAD"));
         Date requesterDate = new Date();
         RequestDDRPledge.Initiator flow = new RequestDDRPledge.Initiator(amount, requesterDate);

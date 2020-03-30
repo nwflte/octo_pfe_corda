@@ -47,7 +47,7 @@ public class DDRObligationContract implements Contract {
             require.using("", tx.getInputs().size() == 1 && tx.inputsOfType(DDRObligationState.class).size() == 1);
             DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
             DDRObligationState input = tx.inputsOfType(DDRObligationState.class).get(0);
-            require.using("", input.getLinearId().compareTo(output.getLinearId()) == 0);
+            require.using("", input.getExternalId().equals(output.getExternalId()));
             require.using("", input.getType() == DDRObligationType.PLEDGE && input.getStatus() == DDRObligationStatus.REQUEST);
             require.using("", output.getStatus() == DDRObligationStatus.APPROVED);
             // Verify that other properties didn't change

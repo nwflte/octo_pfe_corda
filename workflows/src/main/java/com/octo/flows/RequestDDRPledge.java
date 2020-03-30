@@ -12,6 +12,7 @@ import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
+import net.corda.core.node.StatesToRecord;
 import net.corda.core.transactions.LedgerTransaction;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
@@ -94,7 +95,7 @@ public class RequestDDRPledge {
         public SignedTransaction call() throws FlowException {
             final SecureHash txId = subFlow(new CheckTransactionAndSignFlow(counterPartySession, SignTransactionFlow.Companion.tracker())).getId();
 
-            return subFlow(new ReceiveFinalityFlow(counterPartySession, txId));
+            return subFlow(new ReceiveFinalityFlow(counterPartySession, txId, StatesToRecord.ALL_VISIBLE));
         }
 
         private class CheckTransactionAndSignFlow extends SignTransactionFlow {
