@@ -1,3 +1,6 @@
 
-X
-java:S2094"BRemove this empty class, write its code or make it an "interface".(ö —ö
+W
+java:S1118":Add a private constructor to hide the implicit public one.(ö —ö8îö’•’.
+X	java:S125"<This block of commented-out lines of code should be removed.(¨§™ý8îö’•’.
+
+java:S1488?"bImmediately return this expression instead of assigning it to the temporary variable "finalityTx".(Ùèê†8îö’•’.

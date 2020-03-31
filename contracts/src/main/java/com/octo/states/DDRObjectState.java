@@ -5,6 +5,7 @@ import com.octo.contracts.DDRObjectContract;
 import net.corda.core.contracts.*;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.Party;
+import net.corda.core.serialization.ConstructorForDeserialization;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Currency;
@@ -20,12 +21,21 @@ public class DDRObjectState implements FungibleState<Currency>, OwnableState {
     private final Currency currency;
     private final Party owner;
 
+    @ConstructorForDeserialization
     public DDRObjectState(Party issuer, Date issuerDate, Amount<Currency> amount, Currency currency, Party owner) {
         this.issuer = issuer;
         this.issuerDate = issuerDate;
         this.amount = amount;
         this.currency = currency;
         this.owner = owner;
+    }
+
+    public DDRObjectState(DDRObjectStateBuilder builder) {
+        this.issuer = builder.issuer;
+        this.issuerDate = builder.issuerDate;
+        this.amount = builder.amount;
+        this.currency = builder.currency;
+        this.owner = builder.owner;
     }
 
     @NotNull

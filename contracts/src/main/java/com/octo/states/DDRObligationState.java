@@ -7,6 +7,7 @@ import com.octo.enums.DDRObligationType;
 import net.corda.core.contracts.*;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.Party;
+import net.corda.core.serialization.ConstructorForDeserialization;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Currency;
@@ -16,16 +17,17 @@ import java.util.List;
 @BelongsToContract(DDRObligationContract.class)
 public class DDRObligationState implements LinearState, OwnableState {
 
-    private final Party issuer;
-    private final Party requester;
-    private final Date requesterDate;
-    private final Amount<Currency> amount;
-    private final Party owner;
-    private final DDRObligationType type;
-    private final DDRObligationStatus status;
-    private final String externalId;
-    private final UniqueIdentifier linearId;
+    private Party issuer;
+    private Party requester;
+    private Date requesterDate;
+    private Amount<Currency> amount;
+    private Party owner;
+    private DDRObligationType type;
+    private DDRObligationStatus status;
+    private String externalId;
+    private UniqueIdentifier linearId;
 
+    @ConstructorForDeserialization
     public DDRObligationState(Party issuer, Party requester, Date requesterDate, Amount<Currency> amount, Party owner,
                               DDRObligationType type, DDRObligationStatus status, String externalId) {
         this.issuer = issuer;
@@ -37,6 +39,18 @@ public class DDRObligationState implements LinearState, OwnableState {
         this.status = status;
         this.externalId = externalId;
         this.linearId = new UniqueIdentifier(externalId);
+    }
+
+    public DDRObligationState(DDRObligationStateBuilder builder) {
+        this.issuer = builder.issuer;
+        this.requester = builder.requester;
+        this.requesterDate = builder.requesterDate;
+        this.amount = builder.amount;
+        this.owner = builder.owner;
+        this.type = builder.type;
+        this.status = builder.status;
+        this.externalId = builder.externalId;
+        this.linearId = builder.linearId;
     }
 
     @NotNull
@@ -90,8 +104,8 @@ public class DDRObligationState implements LinearState, OwnableState {
                 type, status, externalId));
     }
 
-    public DDRObligationState approveRequest(){
-        if(status == DDRObligationStatus.REQUEST)
+    public DDRObligationState approveRequest() {
+        if (status == DDRObligationStatus.REQUEST)
             return new DDRObligationState(issuer, requester, requesterDate, amount, owner, type, DDRObligationStatus.APPROVED, externalId);
         throw new IllegalStateException("Cannot approve an obligation that's in " + status.toString() + " Status");
     }
