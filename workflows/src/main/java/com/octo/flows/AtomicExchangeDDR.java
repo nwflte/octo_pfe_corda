@@ -1,9 +1,5 @@
 package com.octo.flows;
 
-import co.paralleluniverse.fibers.Suspendable;
-import net.corda.core.flows.*;
-import net.corda.core.utilities.ProgressTracker;
-
 public class AtomicExchangeDDR {
 
     /*@InitiatingFlow

@@ -3,6 +3,7 @@ package com.octo.contracts;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
 import com.octo.states.DDRObligationState;
+import com.octo.utils.Require;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.transactions.LedgerTransaction;
@@ -44,17 +45,14 @@ public class DDRObligationContract implements Contract {
     }
 
     private void verifyRequestPledge(LedgerTransaction tx) {
-        requireThat(require -> {
-            require.using("Only 1 output DDRObligationState should be created when requesting DDR Pledge",
-                    tx.getOutputs().size() == 1 && tx.outputsOfType(DDRObligationState.class).size() == 1);
-            require.using("No inputs should be consumed when requesting DDR Pledge", tx.getInputs().isEmpty());
-            DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
-            require.using("Output DDRObligationState should have type Pledge when requesting DDR Pledge",
-                    output.getType() == DDRObligationType.PLEDGE);
-            require.using("Output DDRObligationState should have status REQUEST when requesting DDR Pledge",
-                    output.getStatus() == DDRObligationStatus.REQUEST);
-            return null;
-        });
+        Require.using("Only 1 output DDRObligationState should be created when requesting DDR Pledge",
+                tx.getOutputs().size() == 1 && tx.outputsOfType(DDRObligationState.class).size() == 1);
+        Require.using("No inputs should be consumed when requesting DDR Pledge", tx.getInputs().isEmpty());
+        DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
+        Require.using("Output DDRObligationState should have type Pledge when requesting DDR Pledge",
+                output.getType() == DDRObligationType.PLEDGE);
+        Require.using("Output DDRObligationState should have status REQUEST when requesting DDR Pledge",
+                output.getStatus() == DDRObligationStatus.REQUEST);
     }
 
     private void verifyApprovePledge(LedgerTransaction tx) {
