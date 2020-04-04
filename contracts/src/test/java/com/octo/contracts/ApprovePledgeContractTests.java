@@ -2,7 +2,6 @@ package com.octo.contracts;
 
 import com.google.common.collect.ImmutableList;
 import com.octo.enums.DDRObligationStatus;
-import com.octo.enums.DDRObligationType;
 import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationStateBuilder;
 import net.corda.core.contracts.Amount;
@@ -12,16 +11,17 @@ import java.util.Currency;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
 
-public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPledgeContractTests {
+public class ApprovePledgeContractTests extends BaseObligationContractTests {
 
     @Test
-    public void approveDDRPledgeShouldHaveOneOutputDDRObligation() {
+    public void approvePledgeShouldHaveOneOutputPledgeApproved() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge());
 
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
+                tx.output(DDRObjectContract.ID, exampleDDRObject);
                 tx.failsWith("1 output of type DDRObligationState must be created when approving DDR Pledge");
 
                 tx.tweak(tw -> {
@@ -29,9 +29,9 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
                     return tw.failsWith("Output DDRObligationState should have status APPROVED");
                 });
 
-                tx.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                tx.output(DDRObligationContract.ID, examplePledgeApproved);
                 tx.verifies();
-                tx.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                tx.output(DDRObligationContract.ID, examplePledgeApproved);
                 return tx.failsWith("1 output of type DDRObligationState must be created when approving DDR Pledge");
 
             });
@@ -40,7 +40,7 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
     }
 
     @Test
-    public void approveDDRPledgeOutputTotalAmountOfDDRObjectEqualAmountInputDDRObligation() {
+    public void approvePledgeShouldHaveOutputTotalAmountOfDDREqualAmountOfPledgeRequest() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
@@ -48,12 +48,12 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
 
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
 
-                tx.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                tx.output(DDRObligationContract.ID, examplePledgeApproved);
 
                 tx.tweak(tw -> {
                     tw.output(DDRObjectContract.ID, new DDRObjectStateBuilder(exampleDDRObject)
                             .amount(new Amount<Currency>(999, Currency.getInstance("MAD"))).build());
-                    return tw.failsWith("Total Output Amount DDRObjectState should equal DDRObligationState amount");
+                    return tw.failsWith("Pledged amount should be equal to total amount of issued DDR Objects");
                 });
 
                 tx.output(DDRObjectContract.ID, exampleDDRObject);
@@ -65,25 +65,25 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
 
 
     @Test
-    public void approveDDRPledgeShouldHaveOneInputOfTypeDDRObjectObligationWithType_Pledge_AndStatus_Request() {
+    public void approvePledgeShouldHaveOneInputPledgeRequest() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge());
 
-                tx.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                tx.output(DDRObligationContract.ID, examplePledgeApproved);
 
                 tx.output(DDRObjectContract.ID, exampleDDRObject);
 
                 tx.failsWith("1 input of type DDRObligationState should be consumed when approving DDR Pledge");
 
                 tx.tweak(tw -> {
-                    tw.input(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).type(DDRObligationType.REDEEM).build());
+                    tw.input(DDRObligationContract.ID, exampleRedeemRequest);
                     return tw.failsWith("Input DDRObligationState should have type PLEDGE");
                 });
 
                 tx.tweak(tw -> {
-                    tw.input(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                    tw.input(DDRObligationContract.ID, examplePledgeApproved);
                     return tw.failsWith("Input DDRObligationState should have status REQUEST");
                 });
 
@@ -97,7 +97,7 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
     }
 
     @Test
-    public void approveDDRPledgeShouldHaveOutputAndInputDDRObligationWithSameExternalId() {
+    public void approvePledgeShouldHaveOutputAndInputPledgeWithSameExternalId() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
@@ -107,12 +107,11 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
                 tx.output(DDRObjectContract.ID, exampleDDRObject);
                 tx.tweak(tw -> {
-                    tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest)
-                            .status(DDRObligationStatus.APPROVED).externalId("differentExternalId").build());
+                    tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeApproved).externalId("differentExternalId").build());
                     return tw.failsWith("Input and output DDRObligationState should have same ExternalId");
                 });
 
-                tx.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                tx.output(DDRObligationContract.ID, examplePledgeApproved);
                 return tx.verifies();
             });
             return null;
@@ -120,7 +119,7 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
     }
 
     @Test
-    public void approveDDRPledgeShouldHaveOutputAndInputDDRObligationWithSameAttributes_ExceptStatus() {
+    public void approvePledgeShouldHaveOutputAndInputPledgeWithSameAttributes_ExceptStatus() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
@@ -129,12 +128,11 @@ public class ApproveDDRObligationPledgeContractTests extends BaseDDRObligationPl
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
                 tx.output(DDRObjectContract.ID, exampleDDRObject);
                 tx.tweak(tw -> {
-                    tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest)
-                            .status(DDRObligationStatus.APPROVED).requester(bankB.getParty()).build());
+                    tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeApproved).requester(bankB.getParty()).build());
                     return tw.failsWith("Input and output DDRObligationState should have same attributes except Status");
                 });
 
-                tx.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                tx.output(DDRObligationContract.ID, examplePledgeApproved);
                 return tx.verifies();
             });
             return null;

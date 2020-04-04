@@ -1,17 +1,14 @@
 package com.octo.contracts;
 
 import com.google.common.collect.ImmutableList;
-import com.octo.enums.DDRObligationStatus;
-import com.octo.enums.DDRObligationType;
-import com.octo.states.DDRObligationStateBuilder;
 import org.junit.Test;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
 
-public class DenyCancelDDRObligationPledgeContractTests extends BaseDDRObligationPledgeContractTests {
+public class DenyOrCancelPledgeContractTests extends BaseObligationContractTests {
 
     @Test
-    public void denyDDRPledgeShouldHaveOneInputDDRObligationOfType_Pledge_andStatus_Request() {
+    public void denyPledgeShouldHaveOneInputPledgeRequest() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
 
@@ -19,12 +16,12 @@ public class DenyCancelDDRObligationPledgeContractTests extends BaseDDRObligatio
                         new DDRObligationContract.DDRObligationCommands.DenyDDRPledge());
 
                 tx.tweak(tw2 -> {
-                    tw2.input(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                    tw2.input(DDRObligationContract.ID, examplePledgeApproved);
                     return tw2.failsWith("Input DDRObligationState should have status REQUEST");
                 });
 
                 tx.tweak(tw2 -> {
-                    tw2.input(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).type(DDRObligationType.REDEEM).build());
+                    tw2.input(DDRObligationContract.ID, exampleRedeemRequest);
                     return tw2.failsWith("Input DDRObligationState should have type PLEDGE");
                 });
 
@@ -40,7 +37,7 @@ public class DenyCancelDDRObligationPledgeContractTests extends BaseDDRObligatio
     }
 
     @Test
-    public void cancelDDRPledgeShouldHaveOneInputDDRObligationOfType_Pledge_andStatus_Request() {
+    public void cancelPledgeShouldHaveOneInputPledgeRequest() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
 
@@ -48,12 +45,12 @@ public class DenyCancelDDRObligationPledgeContractTests extends BaseDDRObligatio
                         new DDRObligationContract.DDRObligationCommands.CancelDDRPledge());
 
                 tx.tweak(tw2 -> {
-                    tw2.input(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                    tw2.input(DDRObligationContract.ID, examplePledgeApproved);
                     return tw2.failsWith("Input DDRObligationState should have status REQUEST");
                 });
 
                 tx.tweak(tw2 -> {
-                    tw2.input(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).type(DDRObligationType.REDEEM).build());
+                    tw2.input(DDRObligationContract.ID, exampleRedeemRequest);
                     return tw2.failsWith("Input DDRObligationState should have type PLEDGE");
                 });
 
@@ -69,7 +66,7 @@ public class DenyCancelDDRObligationPledgeContractTests extends BaseDDRObligatio
     }
 
     @Test
-    public void denyDDRPledgeShouldHaveNoOutputs() {
+    public void denyPledgeShouldHaveNoOutputs() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
 
@@ -86,7 +83,7 @@ public class DenyCancelDDRObligationPledgeContractTests extends BaseDDRObligatio
     }
 
     @Test
-    public void cancelDDRPledgeShouldHaveNoOutputs() {
+    public void cancelPledgeShouldHaveNoOutputs() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
 

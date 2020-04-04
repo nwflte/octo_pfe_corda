@@ -1,17 +1,14 @@
 package com.octo.contracts;
 
 import com.google.common.collect.ImmutableList;
-import com.octo.enums.DDRObligationStatus;
-import com.octo.enums.DDRObligationType;
-import com.octo.states.DDRObligationStateBuilder;
 import org.junit.Test;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
 
-public class RequestDDRObligationPledgeContractTests extends BaseDDRObligationPledgeContractTests {
+public class RequestPledgeContractTests extends BaseObligationContractTests {
 
     @Test
-    public void requestDDRPledgeShouldHaveOneOutput() {
+    public void requestPledgeShouldHaveOneOutput() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
@@ -26,7 +23,7 @@ public class RequestDDRObligationPledgeContractTests extends BaseDDRObligationPl
     }
 
     @Test
-    public void requestDDRPledgeShouldHaveNoInputs() {
+    public void requestPledgeShouldHaveNoInputs() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
@@ -41,7 +38,7 @@ public class RequestDDRObligationPledgeContractTests extends BaseDDRObligationPl
     }
 
     @Test
-    public void requestDDRPledgeShouldHaveOneOutputWithType_Pledge_AndStatus_Request() {
+    public void requestPledgeShouldHaveOneOutputPledgeRequest() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
@@ -49,12 +46,12 @@ public class RequestDDRObligationPledgeContractTests extends BaseDDRObligationPl
 
                 tx.tweak(tw -> {
 
-                    tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).type(DDRObligationType.REDEEM).build());
+                    tw.output(DDRObligationContract.ID, exampleRedeemRequest);
                     return tw.failsWith("Output DDRObligationState should have type Pledge when requesting DDR Pledge");
                 });
 
                 tx.tweak(tw -> {
-                    tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build());
+                    tw.output(DDRObligationContract.ID, examplePledgeApproved);
                     return tw.failsWith("Output DDRObligationState should have status REQUEST when requesting DDR Pledge");
                 });
 
