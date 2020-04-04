@@ -4,8 +4,10 @@ import co.paralleluniverse.fibers.Suspendable;
 import com.google.common.collect.ImmutableList;
 import com.octo.contracts.DDRObjectContract;
 import com.octo.contracts.DDRObligationContract;
+import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObligationState;
+import com.octo.states.DDRObligationStateBuilder;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
@@ -56,13 +58,14 @@ public class ApproveDDRPledge {
             final Party ownerBank = ddrObligationState.getOwner();
 
             final DDRObjectState ddrObjectState = new DDRObjectState(getOurIdentity(), new Date(), ddrObligationState.getAmount()
-            , ddrObligationState.getAmount().getToken(), ddrObligationState.getOwner());
+            , ddrObligationState.getOwner());
 
             List<PublicKey> requiredSigners = ImmutableList.of(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
 
             TransactionBuilder txBuilder = new TransactionBuilder(ddrObligationStateStateAndRef.getState().getNotary())
                     .addInputState(ddrObligationStateStateAndRef)
-                    .addOutputState(ddrObligationState.approveRequest(), DDRObligationContract.ID)
+                    .addOutputState(new DDRObligationStateBuilder(ddrObligationState).status(DDRObligationStatus.APPROVED).build(),
+                            DDRObligationContract.ID)
                     .addOutputState(ddrObjectState, DDRObjectContract.ID)
                     .addCommand(new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge(), requiredSigners);
 
