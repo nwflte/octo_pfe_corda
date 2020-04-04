@@ -77,6 +77,9 @@ public class DDRObligationState implements LinearState, OwnableState {
         return amount;
     }
 
+    public Currency getCurrency() {return amount.getToken();}
+
+    @NotNull
     public Party getOwner() {
         return owner;
     }
@@ -102,11 +105,5 @@ public class DDRObligationState implements LinearState, OwnableState {
     public CommandAndState withNewOwner(@NotNull AbstractParty newOwner) {
         return new CommandAndState(null, new DDRObligationState(issuer, requester, requesterDate, amount, (Party) newOwner,
                 type, status, externalId));
-    }
-
-    public DDRObligationState approveRequest() {
-        if (status == DDRObligationStatus.REQUEST)
-            return new DDRObligationState(issuer, requester, requesterDate, amount, owner, type, DDRObligationStatus.APPROVED, externalId);
-        throw new IllegalStateException("Cannot approve an obligation that's in " + status.toString() + " Status");
     }
 }

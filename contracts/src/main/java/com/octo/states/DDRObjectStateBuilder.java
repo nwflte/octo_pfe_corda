@@ -11,14 +11,12 @@ public class DDRObjectStateBuilder {
     Party issuer;
     Date issuerDate;
     Amount<Currency> amount;
-    Currency currency;
     Party owner;
 
     public DDRObjectStateBuilder(DDRObjectState state) {
         issuer = state.getIssuer();
         issuerDate = state.getIssuerDate();
         amount = state.getAmount();
-        currency = state.getCurrency();
         owner = (Party) state.getOwner();
     }
 
@@ -37,11 +35,6 @@ public class DDRObjectStateBuilder {
         return this;
     }
 
-    public DDRObjectStateBuilder currency(Currency currency) {
-        this.currency = currency;
-        return this;
-    }
-
     public DDRObjectStateBuilder owner(Party owner) {
         this.owner = owner;
         return this;
@@ -53,10 +46,9 @@ public class DDRObjectStateBuilder {
         return ddrObjectState;
     }
 
-    private void validateDDRObjectState(DDRObjectState ddrObjectState) {
-        if (issuer != null && issuerDate != null && amount != null && currency != null && owner != null)
+    private void validateDDRObjectState(DDRObjectState state) {
+        if (state.getIssuer() != null && state.getIssuerDate() != null && state.getAmount() != null && state.getOwner() != null)
             return;
-
         throw new IllegalArgumentException("DDRObjectState cannot have null fields");
     }
 }

@@ -82,11 +82,10 @@ public class DDRObligationStateBuilder {
         return ddrObligationState;
     }
 
-    private void validateDDRObligationState(DDRObligationState ddrObligationState) {
-        if (issuer != null && requester != null && requesterDate != null && amount != null && owner != null && type != null
-                && status != null && externalId != null & linearId != null)
+    private void validateDDRObligationState(DDRObligationState state) {
+        if (state.getIssuer() != null && state.getRequester() != null && state.getRequesterDate() != null && state.getAmount() != null
+                && state.getOwner() != null && state.getType() != null && state.getStatus() != null && state.getExternalId() != null & state.getLinearId() != null)
             return;
-
         throw new IllegalArgumentException("DDRObligationState cannot have null fields");
     }
 }
