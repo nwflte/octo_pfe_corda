@@ -2,12 +2,17 @@ package com.octo.states;
 
 import com.google.common.collect.ImmutableList;
 import com.octo.contracts.InterBankTransferContract;
+import com.octo.schemas.InterBankTransferSchemaV1;
+import com.octo.schemas.PersistentInterBankTransfer;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.BelongsToContract;
 import net.corda.core.contracts.LinearState;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.Party;
+import net.corda.core.schemas.MappedSchema;
+import net.corda.core.schemas.PersistentState;
+import net.corda.core.schemas.QueryableState;
 import net.corda.core.serialization.ConstructorForDeserialization;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 @BelongsToContract(InterBankTransferContract.class)
-public class InterBankTransferState implements LinearState {
+public class InterBankTransferState implements LinearState, QueryableState {
 
     private final String senderRIB;
     private final String receiverRIB;
@@ -90,5 +95,20 @@ public class InterBankTransferState implements LinearState {
 
     public String getExternalId() {
         return externalId;
+    }
+
+    @NotNull
+    @Override
+    public PersistentState generateMappedObject(@NotNull MappedSchema schema) {
+        if(schema instanceof InterBankTransferSchemaV1)
+            return new PersistentInterBankTransfer(senderRIB, receiverRIB, senderBank, receiverBank, amount.getQuantity(),
+                    amount.getToken().getDisplayName(), executionDate, externalId, linearId.getId());
+        else throw new IllegalArgumentException("Unsupported Schema");
+    }
+
+    @NotNull
+    @Override
+    public Iterable<MappedSchema> supportedSchemas() {
+        return ImmutableList.of( new InterBankTransferSchemaV1());
     }
 }

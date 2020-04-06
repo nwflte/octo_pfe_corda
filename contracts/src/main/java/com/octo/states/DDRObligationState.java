@@ -4,9 +4,14 @@ import com.google.common.collect.ImmutableList;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
+import com.octo.schemas.DDRObligationSchemaV1;
+import com.octo.schemas.PersistentDDRObligation;
 import net.corda.core.contracts.*;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.Party;
+import net.corda.core.schemas.MappedSchema;
+import net.corda.core.schemas.PersistentState;
+import net.corda.core.schemas.QueryableState;
 import net.corda.core.serialization.ConstructorForDeserialization;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 @BelongsToContract(DDRObligationContract.class)
-public class DDRObligationState implements LinearState, OwnableState {
+public class DDRObligationState implements LinearState, OwnableState, QueryableState {
 
     private Party issuer;
     private Party requester;
@@ -105,5 +110,20 @@ public class DDRObligationState implements LinearState, OwnableState {
     public CommandAndState withNewOwner(@NotNull AbstractParty newOwner) {
         return new CommandAndState(null, new DDRObligationState(issuer, requester, requesterDate, amount, (Party) newOwner,
                 type, status, externalId));
+    }
+
+    @NotNull
+    @Override
+    public PersistentState generateMappedObject(@NotNull MappedSchema schema) {
+        if(schema instanceof DDRObligationSchemaV1)
+            return new PersistentDDRObligation(externalId, issuer, requesterDate, requester, amount.getQuantity(), amount.getToken().getDisplayName(),
+                    owner, type, status, linearId.getId());
+        else throw new IllegalArgumentException("Unsupported Schema");
+    }
+
+    @NotNull
+    @Override
+    public Iterable<MappedSchema> supportedSchemas() {
+        return ImmutableList.of(new DDRObligationSchemaV1());
     }
 }

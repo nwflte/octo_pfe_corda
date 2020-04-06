@@ -2,38 +2,53 @@ package com.octo.states;
 
 import com.google.common.collect.ImmutableList;
 import com.octo.contracts.IntraBankTransferContract;
+import com.octo.schemas.IntraBankTransferSchemaV1;
+import com.octo.schemas.PersistentIntraBankTransfer;
+import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.BelongsToContract;
 import net.corda.core.contracts.LinearState;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.Party;
+import net.corda.core.schemas.MappedSchema;
+import net.corda.core.schemas.PersistentState;
+import net.corda.core.schemas.QueryableState;
 import org.jetbrains.annotations.NotNull;
 
-import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
 @BelongsToContract(IntraBankTransferContract.class)
-public class IntraBankTransferState implements LinearState {
+public class IntraBankTransferState implements LinearState, QueryableState {
 
     private final String senderRIB;
     private final String receiverRIB;
     private final Party bank;
-    private final BigDecimal amount;
-    private final Currency currency;
+    private final Amount<Currency> amount;
     private final Date executionDate;
 
+    private final String externalId;
     private final UniqueIdentifier linearId;
 
-    public IntraBankTransferState(String senderRIB, String receiverRIB, Party senderBank, BigDecimal amount, Currency currency, Date executionDate, UniqueIdentifier linearId) {
+    public IntraBankTransferState(String senderRIB, String receiverRIB, Party senderBank, Amount<Currency> amount, Date executionDate, String externalId, UniqueIdentifier linearId) {
         this.senderRIB = senderRIB;
         this.receiverRIB = receiverRIB;
         this.bank = senderBank;
         this.amount = amount;
-        this.currency = currency;
         this.executionDate = executionDate;
+        this.externalId = externalId;
         this.linearId = linearId;
+    }
+
+    public IntraBankTransferState(IntraBankTransferStateBuilder builder) {
+        this.senderRIB = builder.senderRIB;
+        this.receiverRIB = builder.receiverRIB;
+        this.bank = builder.bank;
+        this.amount = builder.amount;
+        this.executionDate = builder.executionDate;
+        this.externalId = builder.externalId;
+        this.linearId = builder.linearId;
     }
 
     @NotNull
@@ -60,15 +75,34 @@ public class IntraBankTransferState implements LinearState {
         return bank;
     }
 
-    public BigDecimal getAmount() {
+    public Amount<Currency> getAmount() {
         return amount;
     }
 
     public Currency getCurrency() {
-        return currency;
+        return amount.getToken();
     }
 
     public Date getExecutionDate() {
         return executionDate;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    @NotNull
+    @Override
+    public PersistentState generateMappedObject(@NotNull MappedSchema schema) {
+        if(schema instanceof IntraBankTransferSchemaV1)
+            return new PersistentIntraBankTransfer(senderRIB, receiverRIB, bank, amount.getQuantity(), amount.getToken().getDisplayName(),
+                    executionDate, externalId, linearId.getId());
+        else throw new IllegalArgumentException("Unsupported Schema");
+    }
+
+    @NotNull
+    @Override
+    public Iterable<MappedSchema> supportedSchemas() {
+        return ImmutableList.of(new IntraBankTransferSchemaV1());
     }
 }
