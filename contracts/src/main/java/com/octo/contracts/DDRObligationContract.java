@@ -4,7 +4,6 @@ import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
 import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObligationState;
-import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.transactions.LedgerTransaction;

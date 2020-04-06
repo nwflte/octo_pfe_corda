@@ -1,7 +1,6 @@
 package com.octo.contracts;
 
 import com.octo.states.DDRObjectState;
-import com.octo.states.InterBankTransferState;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.identity.Party;
@@ -9,8 +8,6 @@ import net.corda.core.transactions.LedgerTransaction;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
-import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 public class DDRObjectContract implements Contract {
 

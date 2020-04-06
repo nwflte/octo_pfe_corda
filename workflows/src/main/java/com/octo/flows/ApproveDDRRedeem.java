@@ -2,7 +2,6 @@ package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.google.common.collect.ImmutableList;
-import com.octo.contracts.DDRObjectContract;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObjectState;
@@ -23,7 +22,6 @@ import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
-import java.util.Date;
 import java.util.List;
 
 public class ApproveDDRRedeem {

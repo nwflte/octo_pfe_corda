@@ -8,8 +8,6 @@ import net.corda.testing.node.StartedMockNode;
 import net.corda.testing.node.TestCordapp;
 import org.junit.After;
 import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.ExpectedException;
 
 public class BaseTest {

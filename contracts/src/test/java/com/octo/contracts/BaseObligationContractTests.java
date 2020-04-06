@@ -1,6 +1,5 @@
 package com.octo.contracts;
 
-import com.google.common.collect.ImmutableList;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
 import com.octo.states.DDRObjectState;
@@ -10,12 +9,9 @@ import net.corda.core.contracts.Amount;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.testing.core.TestIdentity;
 import net.corda.testing.node.MockServices;
-import org.junit.Test;
 
 import java.util.Currency;
 import java.util.Date;
-
-import static net.corda.testing.node.NodeTestUtils.ledger;
 
 public class BaseObligationContractTests {
 

@@ -1,7 +1,6 @@
 package com.octo.contracts;
 
 import com.google.common.collect.ImmutableList;
-import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationStateBuilder;
 import net.corda.core.contracts.Amount;
