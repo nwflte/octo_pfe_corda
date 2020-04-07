@@ -19,7 +19,7 @@ public class DDRObligationContract implements Contract {
     public static final String ID = "com.octo.contracts.DDRObligationContract";
 
     @Override
-    public void verify(@NotNull LedgerTransaction tx){
+    public void verify(@NotNull LedgerTransaction tx) {
         requireThat(require -> {
             Stream<DDRObligationState> allStates =
                     Stream.concat(tx.inputsOfType(DDRObligationState.class).stream(), tx.outputsOfType(DDRObligationState.class).stream());
@@ -147,7 +147,7 @@ public class DDRObligationContract implements Contract {
                 st1.getIssuer().equals(st2.getIssuer()) && st1.getType().equals(st2.getType());
     }
 
-    private boolean compareObligationAmountAndDDRObjectTotalAmount(DDRObligationState obligation, List<DDRObjectState> ddrs){
+    private boolean compareObligationAmountAndDDRObjectTotalAmount(DDRObligationState obligation, List<DDRObjectState> ddrs) {
         return ddrs.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum() == obligation.getAmount().getQuantity();
     }
 

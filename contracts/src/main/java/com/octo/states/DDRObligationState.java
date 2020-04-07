@@ -79,7 +79,9 @@ public class DDRObligationState implements LinearState, OwnableState, QueryableS
         return amount;
     }
 
-    public Currency getCurrency() {return amount.getToken();}
+    public Currency getCurrency() {
+        return amount.getToken();
+    }
 
     @NotNull
     public Party getOwner() {
@@ -112,7 +114,7 @@ public class DDRObligationState implements LinearState, OwnableState, QueryableS
     @NotNull
     @Override
     public PersistentState generateMappedObject(@NotNull MappedSchema schema) {
-        if(schema instanceof DDRObligationSchemaV1)
+        if (schema instanceof DDRObligationSchemaV1)
             return new PersistentDDRObligation(externalId, issuer, requesterDate, requester, amount.getQuantity(), amount.getToken().getDisplayName(),
                     owner, type, status, linearId.getId());
         else throw new IllegalArgumentException("Unsupported Schema");

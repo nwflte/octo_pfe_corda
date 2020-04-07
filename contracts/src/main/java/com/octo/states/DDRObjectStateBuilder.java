@@ -13,6 +13,10 @@ public class DDRObjectStateBuilder {
     Amount<Currency> amount;
     Party owner;
 
+    public DDRObjectStateBuilder() {
+
+    }
+
     public DDRObjectStateBuilder(DDRObjectState state) {
         issuer = state.getIssuer();
         issuerDate = state.getIssuerDate();

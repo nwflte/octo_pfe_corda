@@ -8,7 +8,7 @@ import java.util.Collections;
 @CordaSerializable
 public class DDRObligationSchemaV1 extends MappedSchema {
 
-    public DDRObligationSchemaV1(){
+    public DDRObligationSchemaV1() {
         super(DDRObligationSchemaFamily.class, 1, Collections.singletonList(PersistentDDRObligation.class));
     }
 

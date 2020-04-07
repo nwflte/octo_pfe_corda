@@ -94,7 +94,7 @@ public class IntraBankTransferState implements LinearState, QueryableState {
     @NotNull
     @Override
     public PersistentState generateMappedObject(@NotNull MappedSchema schema) {
-        if(schema instanceof IntraBankTransferSchemaV1)
+        if (schema instanceof IntraBankTransferSchemaV1)
             return new PersistentIntraBankTransfer(senderRIB, receiverRIB, bank.toString(), amount.getQuantity(), amount.getToken().getDisplayName(),
                     executionDate, externalId, linearId.getId());
         else throw new IllegalArgumentException("Unsupported Schema");

@@ -46,7 +46,7 @@ public class InterBankTransferContract implements Contract {
     }
 
     private void senderBankTransfersDDRAmountRequiredToReceiver(List<DDRObjectState> inputs, List<DDRObjectState> outputs,
-                                                         InterBankTransferState transfer) {
+                                                                InterBankTransferState transfer) {
         long totalInputAmount = inputs.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
         long restOfTransfer = totalInputAmount - transfer.getAmount().getQuantity();
 
@@ -59,11 +59,11 @@ public class InterBankTransferContract implements Contract {
 
 
         long totalReceiverOutput = getTotalAmountOfParty(outputs, transfer.getReceiverBank());
-        if(totalReceiverOutput != transfer.getAmount().getQuantity())
+        if (totalReceiverOutput != transfer.getAmount().getQuantity())
             throw new IllegalArgumentException("Failed requirement: Receiver Bank should own output DDR Objects equal to transfer amount in an interbank transfer");
     }
 
-    private long getTotalAmountOfParty(List<DDRObjectState> ddrs, Party party){
+    private long getTotalAmountOfParty(List<DDRObjectState> ddrs, Party party) {
         return ddrs.stream().filter(ddr -> ddr.getOwner().equals(party)).mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
     }
 

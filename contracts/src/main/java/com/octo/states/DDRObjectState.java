@@ -37,7 +37,7 @@ public class DDRObjectState implements FungibleState<Currency>, OwnableState {
 
     @NotNull
     @Override
-    public Amount getAmount() {
+    public Amount<Currency> getAmount() {
         return amount;
     }
 

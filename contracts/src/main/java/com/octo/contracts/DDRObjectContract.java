@@ -17,7 +17,7 @@ public class DDRObjectContract implements Contract {
     public static final String ID = "com.octo.contracts.DDRObjectContract";
 
     @Override
-    public void verify(@NotNull LedgerTransaction tx){
+    public void verify(@NotNull LedgerTransaction tx) {
         tx.getCommands().stream().forEach(command -> {
             CommandData commandData = command.getValue();
             if (commandData instanceof InterBankTransferContract.InterBankTransferCommands.BankTransfer)
@@ -40,7 +40,7 @@ public class DDRObjectContract implements Contract {
         });
     }
 
-    private boolean doDDRsHaveSameOwner(List<DDRObjectState> ddrs){
+    private boolean doDDRsHaveSameOwner(List<DDRObjectState> ddrs) {
         Party owner = (Party) ddrs.get(0).getOwner();
         return ddrs.stream().allMatch(ddr -> ddr.getOwner().equals(owner));
     }

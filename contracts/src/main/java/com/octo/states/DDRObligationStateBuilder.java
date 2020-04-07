@@ -23,6 +23,10 @@ public class DDRObligationStateBuilder {
     String externalId;
     UniqueIdentifier linearId;
 
+    public DDRObligationStateBuilder() {
+
+    }
+
     public DDRObligationStateBuilder(DDRObligationState state) {
         issuer = state.getIssuer();
         requester = state.getRequester();

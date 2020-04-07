@@ -11,13 +11,17 @@ import java.util.Date;
 @CordaSerializable
 public class IntraBankTransferStateBuilder {
 
-     String senderRIB;
-     String receiverRIB;
-     Party bank;
-     Amount<Currency> amount;
-     Date executionDate;
-     String externalId;
-     UniqueIdentifier linearId;
+    String senderRIB;
+    String receiverRIB;
+    Party bank;
+    Amount<Currency> amount;
+    Date executionDate;
+    String externalId;
+    UniqueIdentifier linearId;
+
+    public IntraBankTransferStateBuilder() {
+
+    }
 
     public IntraBankTransferStateBuilder(IntraBankTransferState state) {
         this.senderRIB = state.getSenderRIB();
@@ -69,9 +73,9 @@ public class IntraBankTransferStateBuilder {
 
     private void validateState(IntraBankTransferState state) {
         if (state.getAmount() != null && state.getExecutionDate() != null && state.getExternalId() != null && state.getLinearId() != null
-        && state.getBank() != null && state.getReceiverRIB() != null && state.getSenderRIB() != null)
+                && state.getBank() != null && state.getReceiverRIB() != null && state.getSenderRIB() != null)
             return;
         throw new IllegalArgumentException("IntraBankTransferState cannot have null fields");
     }
-    
+
 }

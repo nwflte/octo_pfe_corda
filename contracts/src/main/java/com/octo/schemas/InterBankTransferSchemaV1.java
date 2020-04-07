@@ -8,7 +8,7 @@ import java.util.Collections;
 @CordaSerializable
 public class InterBankTransferSchemaV1 extends MappedSchema {
 
-    public InterBankTransferSchemaV1(){
+    public InterBankTransferSchemaV1() {
         super(InterBankTransferSchemaFamily.class, 1, Collections.singletonList(PersistentInterBankTransfer.class));
     }
 }
