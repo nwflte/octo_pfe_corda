@@ -1,6 +1,5 @@
 package com.octo.schemas;
 
-import net.corda.core.identity.Party;
 import net.corda.core.schemas.PersistentState;
 
 import javax.persistence.Column;
@@ -21,7 +20,7 @@ public class PersistentIntraBankTransfer extends PersistentState implements Seri
     private String receiverRIB;
 
     @Column(name = "bank")
-    private Party bank;
+    private String bank;
 
     @Column(name = "amount")
     private long amount;
@@ -38,7 +37,7 @@ public class PersistentIntraBankTransfer extends PersistentState implements Seri
     @Column(name = "linear_id")
     private UUID linearId;
 
-    public PersistentIntraBankTransfer(String senderRIB, String receiverRIB, Party bank, long amount,
+    public PersistentIntraBankTransfer(String senderRIB, String receiverRIB, String bank, long amount,
                                        String currency, Date executionDate, String externalId, UUID linearId) {
         this.senderRIB = senderRIB;
         this.receiverRIB = receiverRIB;
@@ -61,7 +60,7 @@ public class PersistentIntraBankTransfer extends PersistentState implements Seri
         return receiverRIB;
     }
 
-    public Party getBank() {
+    public String getBank() {
         return bank;
     }
 

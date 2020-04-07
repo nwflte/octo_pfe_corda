@@ -1,7 +1,6 @@
 package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
-import com.google.common.collect.ImmutableList;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObjectState;
@@ -22,6 +21,8 @@ import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ApproveDDRRedeem {
@@ -47,7 +48,7 @@ public class ApproveDDRRedeem {
         public SignedTransaction call() throws FlowException {
             // Initiator flow logic goes here.
             QueryCriteria queryCriteriaObligation = new QueryCriteria.LinearStateQueryCriteria(null, null,
-                    ImmutableList.of(externalId), Vault.StateStatus.UNCONSUMED);
+                    Collections.singletonList(externalId), Vault.StateStatus.UNCONSUMED);
             final StateAndRef<DDRObligationState> obligationStateAndRef = getServiceHub().getVaultService()
                     .queryBy(DDRObligationState.class, queryCriteriaObligation).getStates().get(0);
 
@@ -70,7 +71,7 @@ public class ApproveDDRRedeem {
             final Party ownerBank = obligationState.getOwner();
 
 
-            List<PublicKey> requiredSigners = ImmutableList.of(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
+            List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
 
             TransactionBuilder txBuilder = new TransactionBuilder(obligationStateAndRef.getState().getNotary())
                     .addInputState(obligationStateAndRef)
@@ -86,12 +87,10 @@ public class ApproveDDRRedeem {
 
             final FlowSession ownerBankSession = initiateFlow(ownerBank);
 
-            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableList.of(ownerBankSession),
+            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(ownerBankSession),
                     CollectSignaturesFlow.Companion.tracker()));
 
-            subFlow(new FinalityFlow(fullySignedTx, ImmutableList.of(ownerBankSession)));
-            SignedTransaction finalityTx = subFlow(new ReceiveTransactionFlow(ownerBankSession, true, StatesToRecord.ALL_VISIBLE));
-            return finalityTx;
+            return subFlow(new FinalityFlow(fullySignedTx, Collections.singletonList(ownerBankSession), StatesToRecord.ALL_VISIBLE));
         }
     }
 
@@ -112,9 +111,7 @@ public class ApproveDDRRedeem {
             // Responder flow logic goes here.
             final SecureHash txId = subFlow(new CheckTransactionAndSignFlow(counterpartySession, SignTransactionFlow.Companion.tracker())).getId();
 
-            SignedTransaction finalityTx = subFlow(new ReceiveFinalityFlow(counterpartySession, txId));
-            subFlow(new SendTransactionFlow(counterpartySession, finalityTx));
-            return finalityTx;
+            return subFlow(new ReceiveFinalityFlow(counterpartySession, txId));
         }
 
         private static class CheckTransactionAndSignFlow extends SignTransactionFlow {

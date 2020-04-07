@@ -16,7 +16,7 @@ public class InterBankTransferContractTest extends BaseObligationContractTests {
 
     private final Currency currency = Currency.getInstance("MAD");
     private final DDRObjectState ddr1000 = exampleDDRObject;
-    private final DDRObjectStateBuilder ddrBuilder = new DDRObjectStateBuilder(exampleDDRObject);
+    private final DDRObjectStateBuilder ddrBuilder = new DDRObjectStateBuilder(ddr1000);
     private final DDRObjectState ddr500 = ddrBuilder.amount(new Amount<>(500, currency)).build();
     private final DDRObjectState ddr300 = ddrBuilder.amount(new Amount<>(300, currency)).build();
     private final DDRObjectState ddr200 = ddrBuilder.amount(new Amount<>(200, currency)).build();
@@ -31,7 +31,7 @@ public class InterBankTransferContractTest extends BaseObligationContractTests {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new InterBankTransferContract.InterBankTransferCommands.BankTransfer());
 
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(DDRObjectContract.ID, ddr1000);
                 tx.output(DDRObjectContract.ID, new DDRObjectStateBuilder(ddr500).owner(bankB.getParty()).build());
                 tx.output(DDRObjectContract.ID, new DDRObjectStateBuilder(ddr300).owner(bankB.getParty()).build());
                 tx.output(DDRObjectContract.ID, new DDRObjectStateBuilder(ddr200).owner(bankB.getParty()).build());
@@ -97,7 +97,7 @@ public class InterBankTransferContractTest extends BaseObligationContractTests {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new InterBankTransferContract.InterBankTransferCommands.BankTransfer());
 
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(DDRObjectContract.ID, ddr1000);
                 tx.output(DDRObjectContract.ID, new DDRObjectStateBuilder(ddr500).owner(bankB.getParty()).build());
                 tx.output(DDRObjectContract.ID, new DDRObjectStateBuilder(ddr300).owner(bankB.getParty()).build());
                 tx.output(DDRObjectContract.ID, new DDRObjectStateBuilder(ddr200).owner(bankB.getParty()).build());

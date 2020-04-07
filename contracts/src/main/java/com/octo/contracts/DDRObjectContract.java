@@ -1,6 +1,7 @@
 package com.octo.contracts;
 
 import com.octo.states.DDRObjectState;
+import com.octo.states.InterBankTransferState;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.identity.Party;
@@ -8,6 +9,8 @@ import net.corda.core.transactions.LedgerTransaction;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+
+import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 public class DDRObjectContract implements Contract {
 
@@ -23,7 +26,7 @@ public class DDRObjectContract implements Contract {
     }
 
     private void verifyAtomicExchange(LedgerTransaction tx) {
-        /*requireThat(require -> {
+        requireThat(require -> {
             require.using("No InterBank Transfer State should be consumed in a transfer",
                     tx.inputsOfType(InterBankTransferState.class).isEmpty());
             require.using("Exactly 1 InterBank Transfer State should be created in a transfer",
@@ -34,7 +37,7 @@ public class DDRObjectContract implements Contract {
             require.using("DDR Objects should be created in an Atomic Exchange", !outputs.isEmpty());
             require.using("All DDR Objects consumed should have the same owner", doDDRsHaveSameOwner(inputs));
             return null;
-        });*/
+        });
     }
 
     private boolean doDDRsHaveSameOwner(List<DDRObjectState> ddrs){

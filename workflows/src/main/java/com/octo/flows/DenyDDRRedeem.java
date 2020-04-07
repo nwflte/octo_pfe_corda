@@ -1,7 +1,6 @@
 package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
-import com.google.common.collect.ImmutableList;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.states.DDRObligationState;
 import net.corda.core.contracts.StateAndRef;
@@ -17,6 +16,8 @@ import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class DenyDDRRedeem {
@@ -42,7 +43,7 @@ public class DenyDDRRedeem {
         public SignedTransaction call() throws FlowException {
             // Initiator flow logic goes here.
             QueryCriteria queryCriteria = new QueryCriteria.LinearStateQueryCriteria(null, null,
-                    ImmutableList.of(externalId), Vault.StateStatus.UNCONSUMED);
+                    Collections.singletonList(externalId), Vault.StateStatus.UNCONSUMED);
             List<StateAndRef<DDRObligationState>> inputStateAndRefs = getServiceHub().getVaultService()
                     .queryBy(DDRObligationState.class, queryCriteria).getStates();
 
@@ -51,7 +52,7 @@ public class DenyDDRRedeem {
 
             final Party ownerBank = ddrObligationState.getOwner();
 
-            List<PublicKey> requiredSigners = ImmutableList.of(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
+            List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
 
             TransactionBuilder txBuilder = new TransactionBuilder(ddrObligationStateStateAndRef.getState().getNotary())
                     .addInputState(ddrObligationStateStateAndRef)
@@ -63,14 +64,10 @@ public class DenyDDRRedeem {
 
             final FlowSession ownerBankSession = initiateFlow(ownerBank);
 
-            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableList.of(ownerBankSession),
+            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(ownerBankSession),
                     CollectSignaturesFlow.Companion.tracker()));
 
-            subFlow(new FinalityFlow(fullySignedTx, ImmutableList.of(ownerBankSession)));
-
-            SignedTransaction finalityTx = subFlow(new ReceiveTransactionFlow(ownerBankSession, true, StatesToRecord.ALL_VISIBLE));
-
-            return finalityTx;
+            return subFlow(new FinalityFlow(fullySignedTx, Collections.singletonList(ownerBankSession), StatesToRecord.ALL_VISIBLE));
         }
     }
 

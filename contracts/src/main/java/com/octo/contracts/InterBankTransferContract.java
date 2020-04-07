@@ -28,7 +28,6 @@ public class InterBankTransferContract implements Contract {
 
     private void verifyBankTransfer(LedgerTransaction tx) {
         List<InterBankTransferState> outputTransferStates = tx.outputsOfType(InterBankTransferState.class);
-        InterBankTransferState output = outputTransferStates.get(0);
         requireThat(require -> {
             require.using("No InterBank Transfer State should be consumed in a transfer",
                     tx.inputsOfType(InterBankTransferState.class).isEmpty());
@@ -36,13 +35,14 @@ public class InterBankTransferContract implements Contract {
                     outputTransferStates.size() == 1);
             require.using("DDR Objects should be consumed in an Atomic Exchange", !tx.inputsOfType(DDRObjectState.class).isEmpty());
             require.using("DDR Objects should be created in an Atomic Exchange", !tx.outputsOfType(DDRObjectState.class).isEmpty());
+            InterBankTransferState output = outputTransferStates.get(0);
             require.using("Sender and receiver banks should be different in an interbank transfer",
                     !output.getReceiverBank().equals(output.getSenderBank()));
             require.using("Sender and receiver accounts should be different in an interbank transfer",
                     !output.getSenderRIB().equalsIgnoreCase(output.getReceiverRIB()));
             return null;
         });
-        senderBankTransfersDDRAmountRequiredToReceiver(tx.inputsOfType(DDRObjectState.class), tx.outputsOfType(DDRObjectState.class), output);
+        senderBankTransfersDDRAmountRequiredToReceiver(tx.inputsOfType(DDRObjectState.class), tx.outputsOfType(DDRObjectState.class), outputTransferStates.get(0));
     }
 
     private void senderBankTransfersDDRAmountRequiredToReceiver(List<DDRObjectState> inputs, List<DDRObjectState> outputs,

@@ -1,8 +1,6 @@
 package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
@@ -21,9 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.Currency;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class RequestDDRRedeem {
 
@@ -61,7 +57,7 @@ public class RequestDDRRedeem {
             DDRObligationState ddrObligationState = new DDRObligationState(centralBank, getOurIdentity(), requesterDate,
                     amount, getOurIdentity(), DDRObligationType.REDEEM, DDRObligationStatus.REQUEST, externalId);
 
-            final List<PublicKey> requiredSigners = ImmutableList.of(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
+            final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
 
             txBuilder.addOutputState(ddrObligationState, DDRObligationContract.ID)
                     .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRRedeem(), requiredSigners);
@@ -70,10 +66,10 @@ public class RequestDDRRedeem {
 
             final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
 
-            final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableList.of(centralBankSession)
+            final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(centralBankSession)
                     , CollectSignaturesFlow.Companion.tracker()));
 
-            return subFlow(new FinalityFlow(fullySignedTx, ImmutableSet.of(centralBankSession)));
+            return subFlow(new FinalityFlow(fullySignedTx, centralBankSession));
         }
 
     }

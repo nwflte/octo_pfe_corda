@@ -1,13 +1,13 @@
 package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
-import com.google.common.collect.ImmutableList;
 import com.octo.contracts.DDRObjectContract;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObligationState;
 import com.octo.states.DDRObligationStateBuilder;
+import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
@@ -21,8 +21,7 @@ import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class ApproveDDRPledge {
 
@@ -48,7 +47,7 @@ public class ApproveDDRPledge {
         public SignedTransaction call() throws FlowException {
             // Initiator flow logic goes here.
             QueryCriteria queryCriteria = new QueryCriteria.LinearStateQueryCriteria(null, null,
-                    ImmutableList.of(externalId), Vault.StateStatus.UNCONSUMED);
+                    Collections.singletonList(externalId), Vault.StateStatus.UNCONSUMED);
             List<StateAndRef<DDRObligationState>> inputStateAndRefs = getServiceHub().getVaultService()
                     .queryBy(DDRObligationState.class, queryCriteria).getStates();
 
@@ -60,7 +59,7 @@ public class ApproveDDRPledge {
             final DDRObjectState ddrObjectState = new DDRObjectState(getOurIdentity(), new Date(), ddrObligationState.getAmount()
             , ddrObligationState.getOwner());
 
-            List<PublicKey> requiredSigners = ImmutableList.of(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
+            List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
 
             TransactionBuilder txBuilder = new TransactionBuilder(ddrObligationStateStateAndRef.getState().getNotary())
                     .addInputState(ddrObligationStateStateAndRef)
@@ -75,12 +74,10 @@ public class ApproveDDRPledge {
 
             final FlowSession ownerBankSession = initiateFlow(ownerBank);
 
-            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableList.of(ownerBankSession),
+            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(ownerBankSession),
                     CollectSignaturesFlow.Companion.tracker()));
 
-            subFlow(new FinalityFlow(fullySignedTx, ImmutableList.of(ownerBankSession)));
-            SignedTransaction finalityTx = subFlow(new ReceiveTransactionFlow(ownerBankSession, true, StatesToRecord.ALL_VISIBLE));
-            return finalityTx;
+            return subFlow(new FinalityFlow(fullySignedTx, Collections.singletonList(ownerBankSession), StatesToRecord.ALL_VISIBLE));
         }
     }
 
@@ -101,9 +98,7 @@ public class ApproveDDRPledge {
             // Responder flow logic goes here.
             final SecureHash txId = subFlow(new ApproveDDRPledge.Responder.CheckTransactionAndSignFlow(counterpartySession, SignTransactionFlow.Companion.tracker())).getId();
 
-            SignedTransaction finalityTx = subFlow(new ReceiveFinalityFlow(counterpartySession, txId));
-            subFlow(new SendTransactionFlow(counterpartySession, finalityTx));
-            return finalityTx;
+            return subFlow(new ReceiveFinalityFlow(counterpartySession, txId));
         }
 
         private static class CheckTransactionAndSignFlow extends SignTransactionFlow {

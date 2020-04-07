@@ -1,6 +1,5 @@
 package com.octo.states;
 
-import com.google.common.collect.ImmutableList;
 import com.octo.contracts.DDRObjectContract;
 import net.corda.core.contracts.*;
 import net.corda.core.identity.AbstractParty;
@@ -8,6 +7,7 @@ import net.corda.core.identity.Party;
 import net.corda.core.serialization.ConstructorForDeserialization;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +44,7 @@ public class DDRObjectState implements FungibleState<Currency>, OwnableState {
     @NotNull
     @Override
     public List<AbstractParty> getParticipants() {
-        return ImmutableList.of(issuer, owner);
+        return Arrays.asList(issuer, owner);
     }
 
     @NotNull

@@ -1,13 +1,14 @@
 package com.octo.schemas;
 
-import com.google.common.collect.ImmutableList;
 import net.corda.core.schemas.MappedSchema;
 import net.corda.core.serialization.CordaSerializable;
+
+import java.util.Collections;
 
 @CordaSerializable
 public class IntraBankTransferSchemaV1 extends MappedSchema {
 
     public IntraBankTransferSchemaV1(){
-        super(IntraBankTransferSchemaFamily.class, 1, ImmutableList.of(PersistentIntraBankTransfer.class));
+        super(IntraBankTransferSchemaFamily.class, 1, Collections.singletonList(PersistentIntraBankTransfer.class));
     }
 }
