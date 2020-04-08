@@ -3,10 +3,7 @@ package com.octo.contracts;
 import com.google.common.collect.ImmutableList;
 import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationStateBuilder;
-import net.corda.core.contracts.Amount;
 import org.junit.Test;
-
-import java.util.Currency;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
 
@@ -50,8 +47,7 @@ public class ApprovePledgeContractTests extends BaseObligationContractTests {
                 tx.output(DDRObligationContract.ID, examplePledgeApproved);
 
                 tx.tweak(tw -> {
-                    tw.output(DDRObjectContract.ID, new DDRObjectStateBuilder(exampleDDRObject)
-                            .amount(new Amount<Currency>(999, Currency.getInstance("MAD"))).build());
+                    tw.output(DDRObjectContract.ID, new DDRObjectStateBuilder(exampleDDRObject).amount(999).build());
                     return tw.failsWith("Pledged amount should be equal to total amount of issued DDR Objects");
                 });
 

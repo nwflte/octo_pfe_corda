@@ -8,21 +8,18 @@ import com.octo.states.InterBankTransferStateBuilder;
 import net.corda.core.contracts.Amount;
 import org.junit.Test;
 
-import java.util.Currency;
-
 import static net.corda.testing.node.NodeTestUtils.ledger;
 
 public class InterBankTransferContractTest extends BaseObligationContractTests {
 
-    private final Currency currency = Currency.getInstance("MAD");
     private final DDRObjectState ddr1000 = exampleDDRObject;
     private final DDRObjectStateBuilder ddrBuilder = new DDRObjectStateBuilder(ddr1000);
-    private final DDRObjectState ddr500 = ddrBuilder.amount(new Amount<>(500, currency)).build();
-    private final DDRObjectState ddr300 = ddrBuilder.amount(new Amount<>(300, currency)).build();
-    private final DDRObjectState ddr200 = ddrBuilder.amount(new Amount<>(200, currency)).build();
+    private final DDRObjectState ddr500 = ddrBuilder.amount(500).build();
+    private final DDRObjectState ddr300 = ddrBuilder.amount(300).build();
+    private final DDRObjectState ddr200 = ddrBuilder.amount(200).build();
 
     private final InterBankTransferState interTransfer1000 = new InterBankTransferState("senderRIB", "ReceiverRIB",
-            bankA.getParty(), bankB.getParty(), exampleAmount, exampleDate, "externalId");
+            bankA.getParty(), bankB.getParty(), new Amount<>(exampleAmount, exampleCurrency), exampleDate, "externalId");
 
     @Test
     public void transferShouldHaveOneOutputAndNoInput_InterBankState() {

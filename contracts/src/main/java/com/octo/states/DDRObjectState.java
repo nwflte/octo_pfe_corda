@@ -31,7 +31,7 @@ public class DDRObjectState implements FungibleState<Currency>, OwnableState {
     public DDRObjectState(DDRObjectStateBuilder builder) {
         this.issuer = builder.issuer;
         this.issuerDate = builder.issuerDate;
-        this.amount = builder.amount;
+        this.amount = new Amount<>(builder.amount, builder.currency);
         this.owner = builder.owner;
     }
 
