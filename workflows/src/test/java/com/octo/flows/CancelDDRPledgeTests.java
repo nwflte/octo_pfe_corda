@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
-public class CancelDDRPledgeTests{
+public class CancelDDRPledgeTests {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();

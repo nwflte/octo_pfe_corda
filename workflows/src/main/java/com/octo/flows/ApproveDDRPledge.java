@@ -5,6 +5,7 @@ import com.octo.contracts.DDRObjectContract;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObjectState;
+import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationState;
 import com.octo.states.DDRObligationStateBuilder;
 import net.corda.core.contracts.Amount;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ApproveDDRPledge {
 
@@ -46,27 +48,29 @@ public class ApproveDDRPledge {
         @Override
         public SignedTransaction call() throws FlowException {
             // Initiator flow logic goes here.
-            QueryCriteria queryCriteria = new QueryCriteria.LinearStateQueryCriteria(null, null,
-                    Collections.singletonList(externalId), Vault.StateStatus.UNCONSUMED);
+            QueryCriteria queryCriteria = new QueryCriteria.LinearStateQueryCriteria().withStatus(Vault.StateStatus.UNCONSUMED)
+                    .withExternalId(Collections.singletonList(externalId));
             List<StateAndRef<DDRObligationState>> inputStateAndRefs = getServiceHub().getVaultService()
                     .queryBy(DDRObligationState.class, queryCriteria).getStates();
 
-            final StateAndRef<DDRObligationState> ddrObligationStateStateAndRef = inputStateAndRefs.get(0);
-            final DDRObligationState ddrObligationState = ddrObligationStateStateAndRef.getState().getData();
+            if (inputStateAndRefs.size() != 1)
+                throw new FlowException("There are " + inputStateAndRefs.size() + " states with externalId: " + externalId);
 
-            final Party ownerBank = ddrObligationState.getOwner();
+            final StateAndRef<DDRObligationState> inputStateAndRef = inputStateAndRefs.get(0);
+            final DDRObligationState inputPledge = inputStateAndRef.getState().getData();
 
-            final DDRObjectState ddrObjectState = new DDRObjectState(getOurIdentity(), new Date(), ddrObligationState.getAmount()
-            , ddrObligationState.getOwner());
-
+            final Party ownerBank = inputPledge.getOwner();
             List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
 
-            TransactionBuilder txBuilder = new TransactionBuilder(ddrObligationStateStateAndRef.getState().getNotary())
-                    .addInputState(ddrObligationStateStateAndRef)
-                    .addOutputState(new DDRObligationStateBuilder(ddrObligationState).status(DDRObligationStatus.APPROVED).build(),
+            TransactionBuilder txBuilder = new TransactionBuilder(inputStateAndRef.getState().getNotary())
+                    .addInputState(inputStateAndRef)
+                    .addOutputState(new DDRObligationStateBuilder(inputPledge).status(DDRObligationStatus.APPROVED).build(),
                             DDRObligationContract.ID)
-                    .addOutputState(ddrObjectState, DDRObjectContract.ID)
                     .addCommand(new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge(), requiredSigners);
+
+            produceDDRObjects(inputPledge).forEach(ddr -> {
+                txBuilder.addOutputState(ddr, DDRObjectContract.ID);
+            });
 
             txBuilder.verify(getServiceHub());
 
@@ -79,7 +83,28 @@ public class ApproveDDRPledge {
 
             return subFlow(new FinalityFlow(fullySignedTx, Collections.singletonList(ownerBankSession), StatesToRecord.ALL_VISIBLE));
         }
+
+        /**
+         * Produces DDR Objects of 10DH, then if there's a rest it produces additional one of rest value
+         * Example: For quantity 2500 of tokens (That is 15DH), will produce 3 DDRObjects, two of 10DH and other of 5DH.
+         *
+         * @return
+         */
+        private List<DDRObjectState> produceDDRObjects(DDRObligationState obligationState) {
+            Amount<Currency> amount = obligationState.getAmount();
+            long quantity = amount.getQuantity(); // For exmaple 1000 token
+            DDRObjectStateBuilder builder = new DDRObjectStateBuilder();
+            builder.issuer(obligationState.getIssuer()).issuerDate(new Date()).owner(obligationState.getOwner())
+                    .currency(obligationState.getCurrency());
+            if (quantity >= 1000) {
+                int numberOfTokens = (int) Math.ceil((double) quantity / 1000);
+                return amount.splitEvenly(numberOfTokens).stream().map(am -> builder.amount(am.getQuantity()).build()).collect(Collectors.toList());
+            }
+
+            return Collections.singletonList(builder.amount(quantity).build());
+        }
     }
+
 
     // ******************
     // * Responder flow *

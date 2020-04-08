@@ -3,6 +3,7 @@ package com.octo.flows;
 import com.google.common.collect.ImmutableList;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
+import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObligationState;
 import net.corda.core.concurrent.CordaFuture;
 import net.corda.core.contracts.Amount;
@@ -10,6 +11,9 @@ import net.corda.core.contracts.ContractState;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.contracts.TransactionState;
 import net.corda.core.identity.CordaX500Name;
+import net.corda.core.node.services.StatesNotAvailableException;
+import net.corda.core.node.services.Vault;
+import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.LedgerTransaction;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.testing.node.MockNetwork;
@@ -22,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +48,8 @@ public class ApproveDDRRedeemTests {
     private final StartedMockNode a = network.createNode(CordaX500Name.parse("O=BankA,L=New York,C=US"));
     private final StartedMockNode bc = network.createNode(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
     private String externalId;
-
+    private Amount<Currency> amount3200 =  new Amount<Currency>(1500, Currency.getInstance("MAD"));
+    private Amount<Currency> amount1000 =  new Amount<Currency>(500, Currency.getInstance("MAD"));
 
     public ApproveDDRRedeemTests() {
         a.registerInitiatedFlow(ApproveDDRRedeem.Responder.class);
@@ -56,8 +62,7 @@ public class ApproveDDRRedeemTests {
     public void setup() throws ExecutionException, InterruptedException {
         network.runNetwork();
 
-        RequestDDRPledge.Initiator flowPledge = new RequestDDRPledge.Initiator(
-                new Amount<Currency>(1000, Currency.getInstance("MAD")), new Date(new Date().getTime() - 86400000));
+        RequestDDRPledge.Initiator flowPledge = new RequestDDRPledge.Initiator(amount3200, new Date(new Date().getTime() - 86400000));
         CordaFuture<SignedTransaction> futurePledge = a.startFlow(flowPledge);
         network.runNetwork();
 
@@ -65,8 +70,7 @@ public class ApproveDDRRedeemTests {
         bc.startFlow(new ApproveDDRPledge.Initiator(externalPlegeId));
         network.runNetwork();
 
-        RequestDDRRedeem.Initiator flowRedeem = new RequestDDRRedeem.Initiator(
-                new Amount<>(1000, Currency.getInstance("MAD")), new Date(new Date().getTime() - 86400000));
+        RequestDDRRedeem.Initiator flowRedeem = new RequestDDRRedeem.Initiator(amount1000, new Date(new Date().getTime() - 86400000));
         CordaFuture<SignedTransaction> futureRedeem = a.startFlow(flowRedeem);
         network.runNetwork();
         externalId = ((DDRObligationState) futureRedeem.get().getTx().getOutput(0)).getExternalId();
