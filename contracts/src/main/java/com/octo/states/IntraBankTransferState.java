@@ -12,6 +12,7 @@ import net.corda.core.identity.Party;
 import net.corda.core.schemas.MappedSchema;
 import net.corda.core.schemas.PersistentState;
 import net.corda.core.schemas.QueryableState;
+import net.corda.core.serialization.ConstructorForDeserialization;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -31,14 +32,15 @@ public class IntraBankTransferState implements LinearState, QueryableState {
     private final String externalId;
     private final UniqueIdentifier linearId;
 
-    public IntraBankTransferState(String senderRIB, String receiverRIB, Party senderBank, Amount<Currency> amount, Date executionDate, String externalId, UniqueIdentifier linearId) {
+    @ConstructorForDeserialization
+    public IntraBankTransferState(String senderRIB, String receiverRIB, Party bank, Amount<Currency> amount, Date executionDate, String externalId) {
         this.senderRIB = senderRIB;
         this.receiverRIB = receiverRIB;
-        this.bank = senderBank;
+        this.bank = bank;
         this.amount = amount;
         this.executionDate = executionDate;
         this.externalId = externalId;
-        this.linearId = linearId;
+        this.linearId = new UniqueIdentifier(externalId);
     }
 
     public IntraBankTransferState(IntraBankTransferStateBuilder builder) {

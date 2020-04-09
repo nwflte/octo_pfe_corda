@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObjectState;
+import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationState;
 import com.octo.states.DDRObligationStateBuilder;
 import net.corda.core.contracts.StateAndRef;
@@ -26,8 +27,8 @@ import org.jetbrains.annotations.NotNull;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class ApproveDDRRedeem {
@@ -61,7 +62,7 @@ public class ApproveDDRRedeem {
             final Party ownerBank = obligationState.getOwner();
 
             QueryCriteria vaultCriteria = new VaultQueryCriteria()
-                    .withSoftLockingCondition(new SoftLockingCondition(SoftLockingType.UNLOCKED_ONLY, Collections.EMPTY_LIST))
+                    .withSoftLockingCondition(new SoftLockingCondition(SoftLockingType.UNLOCKED_ONLY, Collections.emptyList()))
             .withExactParticipants(Arrays.asList(getOurIdentity(), ownerBank));
             // Doesn't get states
             /*
@@ -83,9 +84,11 @@ public class ApproveDDRRedeem {
                     .addOutputState(new DDRObligationStateBuilder(obligationState).status(DDRObligationStatus.APPROVED).build())
                     .addCommand(new DDRObligationContract.DDRObligationCommands.ApproveDDRRedeem(), requiredSigners);
 
-            addSufficientDDRToTransaction(txBuilder, toArchiveDDR, obligationState.getAmount().getQuantity());
+            long addedAmount = addInputDDRToTransaction(txBuilder, toArchiveDDR, obligationState.getAmount().getQuantity());
+            boolean isTxBalanced = addRestDDROutput(addedAmount, txBuilder, obligationState);
 
             txBuilder.verify(getServiceHub());
+
             SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
 
             final FlowSession ownerBankSession = initiateFlow(ownerBank);
@@ -95,13 +98,24 @@ public class ApproveDDRRedeem {
             return subFlow(new FinalityFlow(fullySignedTx, Collections.singletonList(ownerBankSession), StatesToRecord.ALL_VISIBLE));
         }
 
-        private void addSufficientDDRToTransaction(TransactionBuilder txBuilder, List<StateAndRef<DDRObjectState>> queriedDDRs, long amount){
-            AtomicLong summed = new AtomicLong();
-            Long sum;
-            queriedDDRs.forEach(ddr -> {
-                if ( summed.addAndGet(ddr.getState().getData().getAmount().getQuantity()) >= amount) return;
+        private long addInputDDRToTransaction(TransactionBuilder txBuilder, List<StateAndRef<DDRObjectState>> queriedDDRs, long amount){
+            long summed = 0;
+            for(StateAndRef<DDRObjectState> ddr : queriedDDRs){
+                if ( summed >= amount) return summed;
                 txBuilder.addInputState(ddr);
-            });
+                summed += ddr.getState().getData().getAmount().getQuantity();
+            }
+            return summed;
+        }
+
+        private boolean addRestDDROutput(long consumedAmount, TransactionBuilder txBuilder, DDRObligationState obligation){
+            long amountToRedeem = obligation.getAmount().getQuantity();
+            if(consumedAmount == amountToRedeem) return true;
+            else if (consumedAmount < amountToRedeem) return false;
+            DDRObjectState restDDR = new DDRObjectStateBuilder().owner(obligation.getOwner()).issuerDate(new Date())
+                    .issuer(obligation.getIssuer()).currency(obligation.getCurrency()).amount(consumedAmount - amountToRedeem).build();
+            txBuilder.addOutputState(restDDR);
+            return true;
         }
     }
 

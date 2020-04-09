@@ -75,7 +75,7 @@ public class DDRObligationContract implements Contract {
             require.using("Input and output DDRObligationState should have same attributes except Status",
                     compareStatesAttributesExceptStatus(input, output));
             require.using("Pledged amount should be equal to total amount of issued DDR Objects",
-                    compareObligationAmountAndDDRObjectTotalAmount(input, outputDDR));
+                    compareObligationAmountAndDDRsTotalAmount(input, outputDDR));
             return null;
         });
     }
@@ -109,11 +109,12 @@ public class DDRObligationContract implements Contract {
     private void verifyApproveRedeem(LedgerTransaction tx) {
         requireThat(require -> {
             require.using("1 output of type DDRObligationState must be created when approving DDR Redeem",
-                    tx.getOutputs().size() == 1 && tx.outputsOfType(DDRObligationState.class).size() == 1);
+                    tx.outputsOfType(DDRObligationState.class).size() == 1);
             require.using("1 input of type DDRObligationState should be consumed when approving DDR Redeem",
                     tx.inputsOfType(DDRObligationState.class).size() == 1);
             DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
             List<DDRObjectState> inputDDR = tx.inputsOfType(DDRObjectState.class);
+            List<DDRObjectState> outputDDR = tx.outputsOfType(DDRObjectState.class);
             DDRObligationState input = tx.inputsOfType(DDRObligationState.class).get(0);
             require.using("Input DDRObligationState should have type REDEEM", input.getType() == DDRObligationType.REDEEM);
             require.using("Input DDRObligationState should have status REQUEST", input.getStatus() == DDRObligationStatus.REQUEST);
@@ -123,7 +124,7 @@ public class DDRObligationContract implements Contract {
             require.using("Input and output DDRObligationState should have same attributes except Status",
                     compareStatesAttributesExceptStatus(input, output));
             require.using("Redeemed amount should be equal to total amount of consumed DDR Objects",
-                    compareObligationAmountAndDDRObjectTotalAmount(input, inputDDR));
+                    isRedeemBlanced(input, inputDDR, outputDDR));
             return null;
         });
     }
@@ -147,8 +148,16 @@ public class DDRObligationContract implements Contract {
                 st1.getIssuer().equals(st2.getIssuer()) && st1.getType().equals(st2.getType());
     }
 
-    private boolean compareObligationAmountAndDDRObjectTotalAmount(DDRObligationState obligation, List<DDRObjectState> ddrs) {
+    private boolean compareObligationAmountAndDDRsTotalAmount(DDRObligationState obligation, List<DDRObjectState> ddrs) {
         return ddrs.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum() == obligation.getAmount().getQuantity();
+    }
+
+    private boolean isRedeemBlanced(DDRObligationState input, List<DDRObjectState> inputDDR, List<DDRObjectState> outputDDR) {
+        long amountToRedeem = input.getAmount().getQuantity();
+        long amountConsumed = inputDDR.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
+        long amountProduced = outputDDR.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
+
+        return amountConsumed >= amountToRedeem && amountProduced == amountConsumed - amountToRedeem;
     }
 
     public interface DDRObligationCommands extends CommandData {
