@@ -49,6 +49,7 @@ public class RequestDDRPledge {
         @Override
         public SignedTransaction call() throws FlowException {
             final Party centralBank = getServiceHub().getNetworkMapCache().getPeerByLegalName(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
+            assert centralBank != null;
             final FlowSession centralBankSession = initiateFlow(centralBank);
 
             TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));

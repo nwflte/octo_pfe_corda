@@ -43,7 +43,7 @@ public class RecordIntraBankTransferTests {
     }
 
     @Before
-    public void setup() throws ExecutionException, InterruptedException {
+    public void setup() {
         network.runNetwork();
     }
 

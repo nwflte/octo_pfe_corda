@@ -57,7 +57,7 @@ public class RecordIntraBankTransfer {
             TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
 
             IntraBankTransferState transferState = new IntraBankTransferState(senderRIB, receiverRIB, getOurIdentity(), amount,
-                    executionDate, senderRIB.substring(0, 5).concat(receiverRIB.substring(0, 5)));
+                    executionDate, executionDate + senderRIB.substring(0, 5) + receiverRIB.substring(0, 5));
 
             final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
 

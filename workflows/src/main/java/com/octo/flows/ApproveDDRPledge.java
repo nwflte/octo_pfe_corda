@@ -16,6 +16,7 @@ import net.corda.core.identity.Party;
 import net.corda.core.node.StatesToRecord;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
+import net.corda.core.node.services.vault.QueryCriteriaUtils;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
@@ -68,9 +69,7 @@ public class ApproveDDRPledge {
                             DDRObligationContract.ID)
                     .addCommand(new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge(), requiredSigners);
 
-            produceDDRObjects(inputPledge).forEach(ddr -> {
-                txBuilder.addOutputState(ddr, DDRObjectContract.ID);
-            });
+            produceDDRObjects(inputPledge).forEach(ddr -> txBuilder.addOutputState(ddr, DDRObjectContract.ID));
 
             txBuilder.verify(getServiceHub());
 
@@ -96,7 +95,7 @@ public class ApproveDDRPledge {
             DDRObjectStateBuilder builder = new DDRObjectStateBuilder();
             builder.issuer(obligationState.getIssuer()).issuerDate(new Date()).owner(obligationState.getOwner())
                     .currency(obligationState.getCurrency());
-            if (quantity >= 1000) {
+            if (quantity > 1000) {
                 int numberOfTokens = (int) Math.ceil((double) quantity / 1000);
                 return amount.splitEvenly(numberOfTokens).stream().map(am -> builder.amount(am.getQuantity()).build()).collect(Collectors.toList());
             }
@@ -121,7 +120,7 @@ public class ApproveDDRPledge {
         @Override
         public SignedTransaction call() throws FlowException {
             // Responder flow logic goes here.
-            final SecureHash txId = subFlow(new ApproveDDRPledge.Responder.CheckTransactionAndSignFlow(counterpartySession, SignTransactionFlow.Companion.tracker())).getId();
+            final SecureHash txId = subFlow(new CheckTransactionAndSignFlow(counterpartySession, SignTransactionFlow.Companion.tracker())).getId();
 
             return subFlow(new ReceiveFinalityFlow(counterpartySession, txId));
         }
