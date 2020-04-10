@@ -1,4 +1,4 @@
-# Instantanious Payements CorDapp
+# Instantaneous Payements CorDapp
 
 This Cordapp is a money transfer platform on corda. It leverages Corda features to allow rapid and parallel transactions.
 Registering intra-bank and inter-bank payements with a regulatory body, making pledges and redeems.
@@ -58,12 +58,22 @@ It will start 4 shell windows, you can start a flow like :
 	If you approve an amount of $1000, it will issue 100 DDR Object of $10 for example. (For $250)
 - Make a bank transfer: `start com.octo.flows.AtomicExchangeDDR$Initiator senderRIB: "senderRIB", receiverRIB: "receiverRIB", receiverBank: "BankB", amount: $500, executionDate: 2020-01-01`
 	Total DDR Objects of 500$ will be transfered to BankB (50 DDR Object each of 10$)
+	
+## Running using Ganache
+
+Another alternative is to use Corda Flavored Ganache, it makes it easier to run a network, visualise transaction and test flows.
+See https://blog.b9lab.com/cordacon-2019-highlights-truffles-corda-flavored-ganache-b83bf00f7c29
+Note: Central Bank node must have the legal name "O=CentralBank,L=New York,C=US" as defined in builde.gradle file, so make sure you to create a node in Ganache with that name. It's still beta so might be unstable.
 
 ## Running Tests
 
 Use IntelliJ and JDK 1.8 (Higher versions might work too, but it's recommanded to use 1.8), the run tests using gradle (If the project is set to run using IntelliJ, you go to `Build, Execution, Deployment -> Gradle` and set `Build and run using` and `Run tests using` to Gradle). There're now two kinds of tests: Contract tests and Flow tests, you can debug the code while tests are running.
 
 Or run from command line : `gradlew test`.
+
+
+
+
 
 // TODO : complete REST APIs and tests.
 // TODO : Test schemas
