@@ -1,16 +1,14 @@
-package com.octo.webserver;
+package com.octo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.octo.web.NodeRPCConnection;
 import net.corda.client.jackson.JacksonSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-
-import static org.springframework.boot.WebApplicationType.SERVLET;
 
 /**
  * Our Spring Boot application.
@@ -22,9 +20,8 @@ public class Starter {
      */
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(Starter.class);
-        app.setBannerMode(Banner.Mode.OFF);
+        //app.setBannerMode(Banner.Mode.LOG);
         //app.setWebApplicationType(SERVLET);
-        app.setWebEnvironment(true);
         app.run(args);
     }
 
