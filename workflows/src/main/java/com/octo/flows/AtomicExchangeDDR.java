@@ -2,7 +2,9 @@ package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.octo.contracts.InterBankTransferContract;
-import com.octo.states.*;
+import com.octo.states.DDRObjectState;
+import com.octo.states.DDRObjectStateBuilder;
+import com.octo.states.InterBankTransferState;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;

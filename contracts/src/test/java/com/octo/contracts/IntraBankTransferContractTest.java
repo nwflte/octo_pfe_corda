@@ -6,7 +6,6 @@ import net.corda.core.contracts.Amount;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
 

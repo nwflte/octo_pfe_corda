@@ -1,6 +1,5 @@
 package com.octo.states;
 
-import net.corda.core.contracts.Amount;
 import net.corda.core.identity.Party;
 
 import java.util.Currency;

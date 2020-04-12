@@ -1,8 +1,6 @@
 package com.octo.mapper;
 
 import com.octo.exceptions.MappedSchemaNotFoundStateException;
-import com.octo.schemas.PersistentDDRObligation;
-import com.octo.states.DDRObligationState;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.schemas.MappedSchema;
 import net.corda.core.schemas.PersistentState;
@@ -14,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class StateMapper {
 
-    public static <T extends QueryableState> PersistentState map(StateAndRef<T> stateAndRef) throws MappedSchemaNotFoundStateException {
+    public static <T extends QueryableState> PersistentState map(StateAndRef<T> stateAndRef) {
         QueryableState state = stateAndRef.getState().getData();
         Iterator<MappedSchema> iterator = state.supportedSchemas().iterator();
         if (!iterator.hasNext())
@@ -23,7 +21,11 @@ public class StateMapper {
         return state.generateMappedObject(mappedSchema);
     }
 
-    public static List<PersistentDDRObligation> map(List<StateAndRef<DDRObligationState>> statesAndRefs) throws MappedSchemaNotFoundStateException {
+    /*public static List<PersistentDDRObligation> map(List<StateAndRef<DDRObligationState>> statesAndRefs){
         return statesAndRefs.stream().map(st -> (PersistentDDRObligation) map(st)).collect(Collectors.toList());
+    }*/
+
+    public static <P extends PersistentState,C extends QueryableState> List<P> map(List<StateAndRef<C>> statesAndRefs, Class<P> pClass) {
+        return statesAndRefs.stream().map(st -> (P) map(st)).collect(Collectors.toList());
     }
 }

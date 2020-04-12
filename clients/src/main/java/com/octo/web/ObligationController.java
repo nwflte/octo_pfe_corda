@@ -3,8 +3,6 @@ package com.octo.web;
 import com.octo.exceptions.ObligationNotFoundException;
 import com.octo.schemas.PersistentDDRObligation;
 import com.octo.service.ObligationService;
-import com.octo.states.DDRObligationState;
-import net.corda.core.contracts.StateAndRef;
 import net.corda.core.node.services.Vault;
 import net.corda.core.transactions.SignedTransaction;
 import org.slf4j.Logger;
@@ -34,32 +32,27 @@ public class ObligationController {
     /**
      * Displays all ddr Obligations states that exist in the node's vault.
      */
-    @GetMapping(value = "all", produces = APPLICATION_JSON_VALUE)
+    @GetMapping
     public ResponseEntity<List<PersistentDDRObligation>> getAllObligations() {
         return ResponseEntity.ok(obligationService.loadAll(Vault.StateStatus.ALL));
     }
 
-    @GetMapping(value = "{id}", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "{id}")
     public ResponseEntity<PersistentDDRObligation> getObligations(@PathVariable String id) {
         return ResponseEntity.ok(obligationService.findById(id).orElseThrow(() -> new ObligationNotFoundException(id)));
     }
 
-    @GetMapping(value = "test/{id}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<PersistentDDRObligation> test(@PathVariable String id) {
-        return ResponseEntity.ok(obligationService.testFindPersistentState(id).orElseThrow(() -> new ObligationNotFoundException(id)));
-    }
-
-    @GetMapping(value = "all-consumed", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "all-consumed")
     public ResponseEntity<List<PersistentDDRObligation>> getAllConsumedObligations() {
         return ResponseEntity.ok(obligationService.loadAll(Vault.StateStatus.CONSUMED));
     }
 
-    @GetMapping(value = "all-unconsumed", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "all-unconsumed")
     public ResponseEntity<List<PersistentDDRObligation>> getAllUnconsumedObligations() {
         return ResponseEntity.ok(obligationService.loadAll(Vault.StateStatus.UNCONSUMED));
     }
 
-    @PostMapping(value = "request-pledge", produces = APPLICATION_JSON_VALUE)
+    @PostMapping(value = "request-pledge")
     public ResponseEntity<String> requestPledge(@RequestBody Map<String, String> request) throws InterruptedException, ExecutionException {
         long amount = Long.parseLong(request.get("amount"));
         SignedTransaction signedTx = obligationService.createPledge(amount);

@@ -1,4 +1,4 @@
-package com.octo;
+package com.octo.utils;
 
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
