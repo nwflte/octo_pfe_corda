@@ -1,6 +1,5 @@
 
+£
+java:S1186d"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(­Öõ›úÿÿÿÿ8íÄÿý“.
 W
-java:S1118":Add a private constructor to hide the implicit public one.(ö —ö8îö’•’.
-X	java:S125"<This block of commented-out lines of code should be removed.(¨§™ý8îö’•’.
-
-java:S1488?"bImmediately return this expression instead of assigning it to the temporary variable "finalityTx".(Ùèê†8îö’•’.
+java:S1118":Add a private constructor to hide the implicit public one.(ö —ö8íÄÿý“.

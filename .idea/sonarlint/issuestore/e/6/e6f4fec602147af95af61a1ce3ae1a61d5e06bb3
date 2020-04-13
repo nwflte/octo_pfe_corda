@@ -1,21 +1,3 @@
 
-F
-java:S1172w")Remove this unused method parameter "tx".(ƒÊ8šœøµ’.
-u
-java:S1602j"SRemove useless curly braces around statement and then remove useless return keyword(Š¥ÿÿÿÿÿ8šœøµ’.
-u
-java:S1602e"SRemove useless curly braces around statement and then remove useless return keyword(Š¥ÿÿÿÿÿ8¦³Ğç’.
-K
-java:S1172p")Remove this unused method parameter "tx".(›•èƒıÿÿÿÿ8šœøµ’.
-
-java:S1130"mRemove the declaration of thrown exception 'java.lang.IllegalArgumentException' which is a runtime exception.(×‹‹Úøÿÿÿÿ8ì¯‚Ë.
-c
-java:S1126P"AReplace this if-then-else statement by a single return statement.(¯•ÿËÿÿÿÿÿ8ØŒæ’.
-K
-java:S1172i")Remove this unused method parameter "tx".(çÜ×®üÿÿÿÿ8šœøµ’.
-u
-java:S1602q"SRemove useless curly braces around statement and then remove useless return keyword(Š¥ÿÿÿÿÿ8šœøµ’.
-F
-java:S1172d")Remove this unused method parameter "tx".(Ôæ£8¦³Ğç’.
-u
-java:S1602x"SRemove useless curly braces around statement and then remove useless return keyword(Š¥ÿÿÿÿÿ8šœøµ’.
+‘
+java:S1192G"tDefine a constant instead of duplicating this literal "Input DDRObligationState should have status REQUEST" 4 times.(ãòØŞ8œÂãÔ“.

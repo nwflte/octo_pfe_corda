@@ -9,6 +9,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
+import javax.annotation.PostConstruct;
+import java.util.TimeZone;
+
 /**
  * Our Spring Boot application.
  */
@@ -22,6 +25,11 @@ public class Starter {
         //app.setBannerMode(Banner.Mode.LOG);
         //app.setWebApplicationType(SERVLET);
         app.run(args);
+    }
+
+    @PostConstruct
+    void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     @Bean

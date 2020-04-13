@@ -1,6 +1,6 @@
 package com.octo.service.impl;
 
-import com.octo.Constants;
+import com.octo.CONSTANTS;
 import com.octo.dto.BankTransferDTO;
 import com.octo.flows.RecordIntraBankTransfer;
 import com.octo.mapper.StateMapper;
@@ -45,7 +45,7 @@ public class IntraBankTransferServiceVaultImpl implements IntraBankTransferServi
 
     @Override
     public SignedTransaction transfer(BankTransferDTO dto) throws ExecutionException, InterruptedException {
-        Amount<Currency> amount = new Amount<>(Utils.toCentimes(dto.getAmount()), Constants.MAD);
+        Amount<Currency> amount = new Amount<>(Utils.toCentimes(dto.getAmount()), CONSTANTS.MAD);
         return proxy.startTrackedFlowDynamic(RecordIntraBankTransfer.Initiator.class, amount, dto.getSenderRIB(), dto.getReceiverRIB(),
                 dto.getExecutionDate()).getReturnValue().get();
     }

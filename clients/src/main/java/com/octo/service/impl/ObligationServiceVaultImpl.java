@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import static com.octo.Constants.MAD;
+import static com.octo.CONSTANTS.MAD;
 
 @Service
 public class ObligationServiceVaultImpl implements ObligationService {

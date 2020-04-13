@@ -1,6 +1,6 @@
 package com.octo.service.impl;
 
-import com.octo.Constants;
+import com.octo.CONSTANTS;
 import com.octo.dto.BankTransferDTO;
 import com.octo.flows.AtomicExchangeDDR;
 import com.octo.mapper.StateMapper;
@@ -49,7 +49,7 @@ public class InterBankTransferServiceVaultImpl implements InterBankTransferServi
 
     @Override
     public SignedTransaction transfer(BankTransferDTO dto) throws ExecutionException, InterruptedException {
-        Amount<Currency> amount = new Amount<>(Utils.toCentimes(dto.getAmount()), Constants.MAD);
+        Amount<Currency> amount = new Amount<>(Utils.toCentimes(dto.getAmount()), CONSTANTS.MAD);
         Party receiverBank = nodeService.getPartyFromRIB(dto.getReceiverRIB());
         return proxy.startTrackedFlowDynamic(AtomicExchangeDDR.Initiator.class, dto.getSenderRIB(), dto.getReceiverRIB(),
                 receiverBank, amount, dto.getExecutionDate()).getReturnValue().get();

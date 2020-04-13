@@ -22,7 +22,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * Define your API endpoints here.
  */
 @RestController
-@RequestMapping("api/obligations") // The paths for HTTP requests are relative to this base path.
+@RequestMapping("obligations") // The paths for HTTP requests are relative to this base path.
 public class ObligationController {
     private static final Logger logger = LoggerFactory.getLogger(ObligationController.class);
 

@@ -1,4 +1,13 @@
 
-]	java:S125"<This block of commented-out lines of code should be removed.(İ²£—üÿÿÿÿ8£¼ò.
-_
-java:S2094"BRemove this empty class, write its code or make it an "interface".(ó¤ é8£¼ò.
+I
+java:S1612h",Replace this lambda with a method reference.(“¶›8î­ñ…–.
+¤
+java:S1186Ÿ"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(­Öõ›úÿÿÿÿ8ÎÃû†–.
+¤
+java:S1186À"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(­Öõ›úÿÿÿÿ8ÊÒ‚‡–.
+W
+java:S1118":Add a private constructor to hide the implicit public one.(ó¤ é8´¡‡–.
+]
+java:S1854N"@Remove this useless assignment to local variable "isTxBalanced".(ÕÌêÆ8ëàÀ„–.
+N
+java:S1481N"1Remove this unused "isTxBalanced" local variable.(ÕÌêÆ8ëàÀ„–.

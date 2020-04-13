@@ -7,11 +7,11 @@
       <env name="config.rpc.username" value="user1" />
       <env name="config.rpc.password" value="test" />
     </envs>
-    <option name="MAIN_CLASS_NAME" value="com.octo.webserver.Starter" />
-    <module name="corda-pfe.clients.main" />
+    <option name="MAIN_CLASS_NAME" value="com.octo.Starter" />
+    <module name="octo_pfe_corda.clients.main" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.octo.webserver.*" />
+        <option name="PATTERN" value="com.octo.utils.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

@@ -14,7 +14,7 @@
           <option value="test" />
         </list>
       </option>
-      <option name="vmOptions" value="" />
+      <option name="vmOptions" value="-ea -javaagent:./lib/quasar.jar" />
     </ExternalSystemSettings>
     <extension name="net.ashald.envfile">
       <option name="IS_ENABLED" value="false" />

@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@RestController("api/node")
+@RestController("node")
 public class NodeController {
 
     @Autowired

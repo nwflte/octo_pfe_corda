@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @RestController()
-@RequestMapping("api/intra")
+@RequestMapping("intra")
 public class IntraBankTransferController {
 
     private static final Logger logger = LoggerFactory.getLogger(IntraBankTransferController.class);

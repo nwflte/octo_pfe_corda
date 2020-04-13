@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.octo.Constants.SERVICE_NAMES;
+import static com.octo.CONSTANTS.SERVICE_NAMES;
 
 @Service
 public class NodeService {

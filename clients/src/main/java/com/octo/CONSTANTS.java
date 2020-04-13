@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Currency;
 import java.util.List;
 
-public class Constants {
+public class CONSTANTS {
 
     public static final Currency MAD = Currency.getInstance("MAD");
     public static final String CENTRAL_BANK_NAME = "O=CentralBank,L=New York,C=US";
