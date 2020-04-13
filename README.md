@@ -70,11 +70,12 @@ Note: Central Bank node must have the legal name "O=CentralBank,L=New York,C=US"
 Now, you can use the exposed endpoints to start flows and query states.
 1- Run `./gradlew deployNodes` and `./build/nodes/runnodes` to start the nodes.
 2- Run the spring client for Bank A, always from root folder run `./gradlew runBankAServer`.
-3- Test endpoints (i.e Postman or cURL) as described in controllers:
-	Examples: Request a pledge : POST {"amount":"5000"} to http://localhost:10050/api/obligations/request-pledge
-		  Query all obligations : GET http://localhost:10050/api/obligations/all
-		  Query one obligation by id : GET http://localhost:10050/api/obligations/<id>
-		etc...
+3- Run the spring client for Central Bank, run `./gradlew runCBServer`.
+4- Test endpoints (i.e Postman or cURL) as described in controllers:
+- 1 : Request a pledge from bank A server.
+- 2 : Approve the pledge from central bank server (You need pledge external ID, query the obligations) .
+- 3 : Make a inter-transfer from bank A (After the pledge is approved), for now it will always transfer to bank B. 
+- 4 : You can record an intra-bank transfer (No DDRs are involved) 
 	
 ## Running Tests
 
@@ -83,13 +84,6 @@ Use IntelliJ and JDK 1.8 (Higher versions might work too, but it's recommanded t
 Or run from command line : `gradlew test`.
 
 
-
-
-
-// TODO : complete REST APIs and tests.
-// TODO : Test schemas
-// TODO : UI Client
-// TODO : Business rules validations in flows.
-// TODO : DDR selection mechanism.
+// TODO : complete REST APIs and tests. | Test schemas | UI Client | Business rules validations in flows. |DDR selection mechanism.
 
 
