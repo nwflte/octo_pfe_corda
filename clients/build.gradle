@@ -8,6 +8,13 @@ sourceSets {
     }
 }
 
+configurations {
+    all {
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+        exclude group: "ch.qos.logback", module: "logback-classic"
+    }
+}
+
 dependencies {
     // Corda dependencies.
     compile "$corda_release_group:corda-rpc:$corda_release_version"
@@ -17,11 +24,11 @@ dependencies {
     compile project(":contracts")
     compile project(":workflows")
 
-    compile("org.springframework.boot:spring-boot-starter-websocket:$spring_boot_version") {
-        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
-    }
+    compile("org.springframework.boot:spring-boot-starter-websocket:$spring_boot_version")
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:$spring_boot_version"
-    runtime "org.h2database:h2:1.4.196"
+    //implementation "org.springframework.boot:spring-boot-starter-security:$spring_boot_version"
+    runtime "com.h2database:h2:1.4.200"
+    // runtime "mysql:mysql-connector-java:8.0.19"
 
     compile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-web:${log4j_version}"

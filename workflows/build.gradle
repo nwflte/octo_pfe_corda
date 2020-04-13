@@ -57,6 +57,9 @@ dependencies {
 
     // CorDapp dependencies.
     cordapp project(":contracts")
+
+    // HTTP Client
+    compile "org.apache.httpcomponents:httpclient:4.5.10"
 }
 
 task integrationTest(type: Test, dependsOn: []) {

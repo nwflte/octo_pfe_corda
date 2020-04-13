@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RestController(value = "/virements")
+@RestController(value = "api/virements")
 class VirementController {
 
   @Autowired
@@ -24,7 +24,7 @@ class VirementController {
             .stream().map(VirementMapper::map).collect(Collectors.toList());
   }
 
-  @PostMapping("/virements")
+  @PostMapping("")
   @ResponseStatus(HttpStatus.CREATED)
   public void createTransaction(@RequestBody VirementDto virementDto){
     virementService.virement(virementDto);

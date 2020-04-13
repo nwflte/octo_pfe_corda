@@ -1,10 +1,7 @@
 package com.octo.service.impl;
 
 import com.octo.exceptions.NegativeOrNullAmountException;
-import com.octo.flows.CancelDDRPledge;
-import com.octo.flows.CancelDDRRedeem;
-import com.octo.flows.RequestDDRPledge;
-import com.octo.flows.RequestDDRRedeem;
+import com.octo.flows.*;
 import com.octo.mapper.StateMapper;
 import com.octo.schemas.PersistentDDRObligation;
 import com.octo.service.ObligationService;
@@ -62,6 +59,16 @@ public class ObligationServiceVaultImpl implements ObligationService {
     }
 
     @Override
+    public SignedTransaction denyPledge(String externalId) throws ExecutionException, InterruptedException {
+        return proxy.startFlowDynamic(DenyDDRPledge.Initiator.class, externalId).getReturnValue().get();
+    }
+
+    @Override
+    public SignedTransaction approvePledge(String externalId) throws ExecutionException, InterruptedException {
+        return proxy.startFlowDynamic(ApproveDDRPledge.Initiator.class, externalId).getReturnValue().get();
+    }
+
+    @Override
     public SignedTransaction createRedeem(long amount) throws ExecutionException, InterruptedException {
         if (amount <= 0) throw new NegativeOrNullAmountException(amount);
         return proxy
@@ -72,6 +79,21 @@ public class ObligationServiceVaultImpl implements ObligationService {
     @Override
     public SignedTransaction cancelRedeem(String externalId) throws ExecutionException, InterruptedException {
         return proxy.startFlowDynamic(CancelDDRRedeem.Initiator.class, externalId).getReturnValue().get();
+    }
+
+    @Override
+    public SignedTransaction denyRedeem(String externalId) throws ExecutionException, InterruptedException {
+        return proxy.startFlowDynamic(DenyDDRRedeem.Initiator.class, externalId).getReturnValue().get();
+    }
+
+    @Override
+    public SignedTransaction approveRedeem(String externalId) throws ExecutionException, InterruptedException {
+        return proxy.startFlowDynamic(ApproveDDRRedeem.Initiator.class, externalId).getReturnValue().get();
+    }
+
+    @Override
+    public String testHttp(String rib) throws ExecutionException, InterruptedException {
+        return proxy.startFlowDynamic(TestOracleFlow.class, rib).getReturnValue().get();
     }
 
 }

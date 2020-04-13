@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController()
-@RequestMapping("inter")
+@RequestMapping("api/inter")
 public class InterBankTransferController {
 
     private static final Logger logger = LoggerFactory.getLogger(InterBankTransferController.class);

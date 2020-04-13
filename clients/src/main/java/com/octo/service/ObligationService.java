@@ -20,8 +20,15 @@ public interface ObligationService {
 
     SignedTransaction cancelPledge(String externalId) throws ExecutionException, InterruptedException;
 
+    SignedTransaction denyPledge(String externalId) throws ExecutionException, InterruptedException;
+
+    SignedTransaction approvePledge(String externalId) throws ExecutionException, InterruptedException;
+
     SignedTransaction createRedeem(long amount) throws ExecutionException, InterruptedException;
 
     SignedTransaction cancelRedeem(String externalId) throws ExecutionException, InterruptedException;
+    SignedTransaction denyRedeem(String externalId) throws ExecutionException, InterruptedException;
+    SignedTransaction approveRedeem(String externalId) throws ExecutionException, InterruptedException;
 
+    String testHttp(String rib) throws ExecutionException, InterruptedException;
 }

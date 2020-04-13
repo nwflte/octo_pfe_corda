@@ -22,7 +22,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * Define your API endpoints here.
  */
 @RestController
-@RequestMapping("obligations") // The paths for HTTP requests are relative to this base path.
+@RequestMapping(value = "api/obligations") // The paths for HTTP requests are relative to this base path.
 public class ObligationController {
     private static final Logger logger = LoggerFactory.getLogger(ObligationController.class);
 
@@ -52,7 +52,8 @@ public class ObligationController {
         return ResponseEntity.ok(obligationService.loadAll(Vault.StateStatus.UNCONSUMED));
     }
 
-    @PostMapping(value = "request-pledge")
+    @PostMapping(value = "request-pledge", consumes = APPLICATION_JSON_VALUE)
+    @ResponseStatus(value=HttpStatus.OK)
     public ResponseEntity<String> requestPledge(@RequestBody Map<String, String> request) throws InterruptedException, ExecutionException {
         long amount = Long.parseLong(request.get("amount"));
         SignedTransaction signedTx = obligationService.createPledge(amount);
@@ -62,6 +63,18 @@ public class ObligationController {
     @PostMapping("cancel-pledge")
     public ResponseEntity<String> cancelPledge(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
         SignedTransaction signedTx = obligationService.cancelPledge(request.getOrDefault("id", "defaultid"));
+        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    }
+
+    @PostMapping("deny-pledge")
+    public ResponseEntity<String> denyPledge(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.denyPledge(request.getOrDefault("id", "defaultid"));
+        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    }
+
+    @PostMapping("approve-pledge")
+    public ResponseEntity<String> approvePledge(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.approvePledge(request.getOrDefault("id", "defaultid"));
         return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
     }
 
@@ -78,5 +91,21 @@ public class ObligationController {
         return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
     }
 
+    @PostMapping("deny-redeem")
+    public ResponseEntity<String> denyRedeem(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.denyRedeem(request.getOrDefault("id", "defaultid"));
+        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    }
 
+    @PostMapping("approve-redeem")
+    public ResponseEntity<String> approveRedeem(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.approveRedeem(request.getOrDefault("id", "defaultid"));
+        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    }
+
+    @GetMapping("test")
+    public ResponseEntity<String> testHttp() throws ExecutionException, InterruptedException {
+        String result = obligationService.testHttp("RIB111111");
+        return ResponseEntity.ok(result);
+    }
 }
