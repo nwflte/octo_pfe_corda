@@ -25,10 +25,7 @@ dependencies {
     compile project(":workflows")
 
     compile("org.springframework.boot:spring-boot-starter-websocket:$spring_boot_version")
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa:$spring_boot_version"
     //implementation "org.springframework.boot:spring-boot-starter-security:$spring_boot_version"
-    runtime "com.h2database:h2:1.4.200"
-    // runtime "mysql:mysql-connector-java:8.0.19"
 
     compile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-web:${log4j_version}"

@@ -1,5 +1,7 @@
 package com.octo.web;
 
+import com.octo.dto.ObligationRequestDTO;
+import com.octo.dto.ObligationUpdateDTO;
 import com.octo.exceptions.ObligationNotFoundException;
 import com.octo.schemas.PersistentDDRObligation;
 import com.octo.service.ObligationService;
@@ -33,8 +35,8 @@ public class ObligationController {
      * Displays all ddr Obligations states that exist in the node's vault.
      */
     @GetMapping
-    public ResponseEntity<List<PersistentDDRObligation>> getAllObligations() {
-        return ResponseEntity.ok(obligationService.loadAll(Vault.StateStatus.ALL));
+    public List<PersistentDDRObligation> getAllObligations() {
+        return obligationService.loadAll(Vault.StateStatus.ALL);
     }
 
     @GetMapping(value = "{id}")
@@ -53,54 +55,51 @@ public class ObligationController {
     }
 
     @PostMapping(value = "request-pledge", consumes = APPLICATION_JSON_VALUE)
-    @ResponseStatus(value=HttpStatus.OK)
-    public ResponseEntity<String> requestPledge(@RequestBody Map<String, String> request) throws InterruptedException, ExecutionException {
-        long amount = Long.parseLong(request.get("amount"));
-        SignedTransaction signedTx = obligationService.createPledge(amount);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> requestPledge(@RequestBody ObligationRequestDTO request) throws InterruptedException, ExecutionException {
+        SignedTransaction signedTx = obligationService.createPledge(request.getAmount());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @PostMapping("cancel-pledge")
-    public ResponseEntity<String> cancelPledge(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
-        SignedTransaction signedTx = obligationService.cancelPledge(request.getOrDefault("id", "defaultid"));
-        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> cancelPledge(@RequestBody ObligationUpdateDTO request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.cancelPledge(request.getExternalId());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @PostMapping("deny-pledge")
-    public ResponseEntity<String> denyPledge(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
-        SignedTransaction signedTx = obligationService.denyPledge(request.getOrDefault("id", "defaultid"));
-        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> denyPledge(@RequestBody ObligationUpdateDTO request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.denyPledge(request.getExternalId());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @PostMapping("approve-pledge")
-    public ResponseEntity<String> approvePledge(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
-        SignedTransaction signedTx = obligationService.approvePledge(request.getOrDefault("id", "defaultid"));
-        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> approvePledge(@RequestBody ObligationUpdateDTO request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.approvePledge(request.getExternalId());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @PostMapping(value = "request-redeem")
-    public ResponseEntity<String> requestRedeem(@RequestBody Map<String, String> request) throws InterruptedException, ExecutionException {
-        long amount = Long.parseLong(request.get("amount"));
-        SignedTransaction signedTx = obligationService.createRedeem(amount);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> requestRedeem(@RequestBody ObligationRequestDTO request) throws InterruptedException, ExecutionException {
+        SignedTransaction signedTx = obligationService.createRedeem(request.getAmount());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @PostMapping("cancel-redeem")
-    public ResponseEntity<String> cancelRedeem(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
-        SignedTransaction signedTx = obligationService.cancelRedeem(request.getOrDefault("id", "defaultid"));
-        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> cancelRedeem(@RequestBody ObligationUpdateDTO request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.cancelRedeem(request.getExternalId());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @PostMapping("deny-redeem")
-    public ResponseEntity<String> denyRedeem(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
-        SignedTransaction signedTx = obligationService.denyRedeem(request.getOrDefault("id", "defaultid"));
-        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> denyRedeem(@RequestBody ObligationUpdateDTO request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.denyRedeem(request.getExternalId());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @PostMapping("approve-redeem")
-    public ResponseEntity<String> approveRedeem(@RequestBody Map<String, String> request) throws ExecutionException, InterruptedException {
-        SignedTransaction signedTx = obligationService.approveRedeem(request.getOrDefault("id", "defaultid"));
-        return ResponseEntity.status(HttpStatus.OK).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+    public ResponseEntity<String> approveRedeem(@RequestBody ObligationUpdateDTO request) throws ExecutionException, InterruptedException {
+        SignedTransaction signedTx = obligationService.approveRedeem(request.getExternalId());
+        return ResponseEntity.ok(signedTx.getId().toString());
     }
 
     @GetMapping("test")

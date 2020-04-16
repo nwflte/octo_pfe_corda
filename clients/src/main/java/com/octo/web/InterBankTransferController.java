@@ -39,7 +39,7 @@ public class InterBankTransferController {
     @PostMapping(value = "perform-transfer")
     public ResponseEntity<String> performTransfer(@RequestBody BankTransferDTO dto) throws InterruptedException, ExecutionException {
         SignedTransaction signedTx = interBankTransferService.transfer(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Transaction id " + signedTx.getId() + " committed to ledger.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(signedTx.getId().toString());
     }
 
 }
