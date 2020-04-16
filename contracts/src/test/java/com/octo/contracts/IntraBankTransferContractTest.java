@@ -2,6 +2,7 @@ package com.octo.contracts;
 
 import com.octo.states.IntraBankTransferState;
 import com.octo.states.IntraBankTransferStateBuilder;
+import com.r3.corda.lib.tokens.contracts.FungibleTokenContract;
 import net.corda.core.contracts.Amount;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class IntraBankTransferContractTest extends BaseObligationContractTests {
                 tx.output(IntraBankTransferContract.ID, intraBankTransferState);
 
                 tx.tweak(tw -> {
-                    tw.output(DDRObjectContract.ID, exampleDDRObject);
+                    tw.output(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                     return tw.failsWith("Recording an IntraBank Transfer should have one output that is IntraBankTransferState");
                 });
 
@@ -34,7 +35,7 @@ public class IntraBankTransferContractTest extends BaseObligationContractTests {
                 });
 
                 tx.tweak(tw -> {
-                    tw.input(DDRObjectContract.ID, exampleDDRObject);
+                    tw.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                     return tw.failsWith("Recording an IntraBank Transfer should not consume any inputs");
                 });
                 return tx.verifies();

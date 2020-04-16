@@ -1,7 +1,7 @@
 package com.octo.contracts;
 
-import com.octo.states.DDRObjectState;
 import com.octo.states.InterBankTransferState;
+import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.identity.Party;
@@ -33,8 +33,8 @@ public class InterBankTransferContract implements Contract {
                     tx.inputsOfType(InterBankTransferState.class).isEmpty());
             require.using("Exactly 1 InterBank Transfer State should be created in a transfer",
                     outputTransferStates.size() == 1);
-            require.using("DDR Objects should be consumed in an Atomic Exchange", !tx.inputsOfType(DDRObjectState.class).isEmpty());
-            require.using("DDR Objects should be created in an Atomic Exchange", !tx.outputsOfType(DDRObjectState.class).isEmpty());
+            require.using("DDR Objects should be consumed in an Atomic Exchange", !tx.inputsOfType(FungibleToken.class).isEmpty());
+            require.using("DDR Objects should be created in an Atomic Exchange", !tx.outputsOfType(FungibleToken.class).isEmpty());
             InterBankTransferState output = outputTransferStates.get(0);
             require.using("Sender and receiver banks should be different in an interbank transfer",
                     !output.getReceiverBank().equals(output.getSenderBank()));
@@ -42,10 +42,10 @@ public class InterBankTransferContract implements Contract {
                     !output.getSenderRIB().equalsIgnoreCase(output.getReceiverRIB()));
             return null;
         });
-        senderBankTransfersDDRAmountRequiredToReceiver(tx.inputsOfType(DDRObjectState.class), tx.outputsOfType(DDRObjectState.class), outputTransferStates.get(0));
+        senderBankTransfersDDRAmountRequiredToReceiver(tx.inputsOfType(FungibleToken.class), tx.outputsOfType(FungibleToken.class), outputTransferStates.get(0));
     }
 
-    private void senderBankTransfersDDRAmountRequiredToReceiver(List<DDRObjectState> inputs, List<DDRObjectState> outputs,
+    private void senderBankTransfersDDRAmountRequiredToReceiver(List<FungibleToken> inputs, List<FungibleToken> outputs,
                                                                 InterBankTransferState transfer) {
         long totalInputAmount = inputs.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
         long restOfTransfer = totalInputAmount - transfer.getAmount().getQuantity();
@@ -63,8 +63,8 @@ public class InterBankTransferContract implements Contract {
             throw new IllegalArgumentException("Failed requirement: Receiver Bank should own output DDR Objects equal to transfer amount in an interbank transfer");
     }
 
-    private long getTotalAmountOfParty(List<DDRObjectState> ddrs, Party party) {
-        return ddrs.stream().filter(ddr -> ddr.getOwner().equals(party)).mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
+    private long getTotalAmountOfParty(List<FungibleToken> ddrs, Party party) {
+        return ddrs.stream().filter(ddr -> ddr.getHolder().equals(party)).mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
     }
 
     public interface InterBankTransferCommands extends CommandData {

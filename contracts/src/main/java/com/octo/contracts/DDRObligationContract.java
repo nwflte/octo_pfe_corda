@@ -2,8 +2,8 @@ package com.octo.contracts;
 
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
-import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObligationState;
+import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.transactions.LedgerTransaction;
@@ -65,7 +65,7 @@ public class DDRObligationContract implements Contract {
             require.using("1 input of type DDRObligationState should be consumed when approving DDR Pledge",
                     tx.getInputs().size() == 1 && tx.inputsOfType(DDRObligationState.class).size() == 1);
             DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
-            List<DDRObjectState> outputDDR = tx.outputsOfType(DDRObjectState.class);
+            List<FungibleToken> outputDDR = tx.outputsOfType(FungibleToken.class);
             DDRObligationState input = tx.inputsOfType(DDRObligationState.class).get(0);
             require.using("Input DDRObligationState should have type PLEDGE", input.getType() == DDRObligationType.PLEDGE);
             require.using("Input DDRObligationState should have status REQUEST", input.getStatus() == DDRObligationStatus.REQUEST);
@@ -113,8 +113,8 @@ public class DDRObligationContract implements Contract {
             require.using("1 input of type DDRObligationState should be consumed when approving DDR Redeem",
                     tx.inputsOfType(DDRObligationState.class).size() == 1);
             DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
-            List<DDRObjectState> inputDDR = tx.inputsOfType(DDRObjectState.class);
-            List<DDRObjectState> outputDDR = tx.outputsOfType(DDRObjectState.class);
+            List<FungibleToken> inputDDR = tx.inputsOfType(FungibleToken.class);
+            List<FungibleToken> outputDDR = tx.outputsOfType(FungibleToken.class);
             DDRObligationState input = tx.inputsOfType(DDRObligationState.class).get(0);
             require.using("Input DDRObligationState should have type REDEEM", input.getType() == DDRObligationType.REDEEM);
             require.using("Input DDRObligationState should have status REQUEST", input.getStatus() == DDRObligationStatus.REQUEST);
@@ -148,11 +148,11 @@ public class DDRObligationContract implements Contract {
                 st1.getIssuer().equals(st2.getIssuer()) && st1.getType().equals(st2.getType());
     }
 
-    private boolean compareObligationAmountAndDDRsTotalAmount(DDRObligationState obligation, List<DDRObjectState> ddrs) {
+    private boolean compareObligationAmountAndDDRsTotalAmount(DDRObligationState obligation, List<FungibleToken> ddrs) {
         return ddrs.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum() == obligation.getAmount().getQuantity();
     }
 
-    private boolean isRedeemBlanced(DDRObligationState input, List<DDRObjectState> inputDDR, List<DDRObjectState> outputDDR) {
+    private boolean isRedeemBlanced(DDRObligationState input, List<FungibleToken> inputDDR, List<FungibleToken> outputDDR) {
         long amountToRedeem = input.getAmount().getQuantity();
         long amountConsumed = inputDDR.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();
         long amountProduced = outputDDR.stream().mapToLong(ddr -> ddr.getAmount().getQuantity()).sum();

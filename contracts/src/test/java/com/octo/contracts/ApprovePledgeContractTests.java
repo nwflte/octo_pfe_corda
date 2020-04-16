@@ -3,11 +3,16 @@ package com.octo.contracts;
 import com.google.common.collect.ImmutableList;
 import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationStateBuilder;
+import com.r3.corda.lib.tokens.contracts.FungibleTokenContract;
+import com.r3.corda.lib.tokens.contracts.commands.IssueTokenCommand;
 import org.junit.Test;
+
+import java.util.Collections;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
 
 public class ApprovePledgeContractTests extends BaseObligationContractTests {
+
 
     @Test
     public void approvePledgeShouldHaveOneOutputPledgeApproved() {
@@ -15,9 +20,11 @@ public class ApprovePledgeContractTests extends BaseObligationContractTests {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge());
+                tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
+                        new IssueTokenCommand(exampleDDRObject.getIssuedTokenType(), Collections.singletonList(0)));
 
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
-                tx.output(DDRObjectContract.ID, exampleDDRObject);
+                tx.output(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 tx.failsWith("1 output of type DDRObligationState must be created when approving DDR Pledge");
 
                 tx.tweak(tw -> {
@@ -41,17 +48,19 @@ public class ApprovePledgeContractTests extends BaseObligationContractTests {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge());
+                tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
+                        new IssueTokenCommand(exampleDDRObject.getIssuedTokenType(), Collections.singletonList(1)));
 
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
 
                 tx.output(DDRObligationContract.ID, examplePledgeApproved);
 
                 tx.tweak(tw -> {
-                    tw.output(DDRObjectContract.ID, new DDRObjectStateBuilder(exampleDDRObject).amount(999).build());
+                    tw.output(FungibleTokenContract.Companion.getContractId(), new DDRObjectStateBuilder(exampleDDRObject).amount(999).build());
                     return tw.failsWith("Pledged amount should be equal to total amount of issued DDR Objects");
                 });
 
-                tx.output(DDRObjectContract.ID, exampleDDRObject);
+                tx.output(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 return tx.verifies();
             });
             return null;
@@ -65,10 +74,12 @@ public class ApprovePledgeContractTests extends BaseObligationContractTests {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge());
+                tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
+                        new IssueTokenCommand(exampleDDRObject.getIssuedTokenType(), Collections.singletonList(1)));
 
                 tx.output(DDRObligationContract.ID, examplePledgeApproved);
 
-                tx.output(DDRObjectContract.ID, exampleDDRObject);
+                tx.output(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
 
                 tx.failsWith("1 input of type DDRObligationState should be consumed when approving DDR Pledge");
 
@@ -97,10 +108,12 @@ public class ApprovePledgeContractTests extends BaseObligationContractTests {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge());
+                tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
+                        new IssueTokenCommand(exampleDDRObject.getIssuedTokenType(), Collections.singletonList(0)));
 
 
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
-                tx.output(DDRObjectContract.ID, exampleDDRObject);
+                tx.output(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 tx.tweak(tw -> {
                     tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeApproved).externalId("differentExternalId").build());
                     return tw.failsWith("Input and output DDRObligationState should have same ExternalId");
@@ -119,9 +132,11 @@ public class ApprovePledgeContractTests extends BaseObligationContractTests {
             ledger.transaction(tx -> {
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge());
+                tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
+                        new IssueTokenCommand(exampleDDRObject.getIssuedTokenType(), Collections.singletonList(0)));
 
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
-                tx.output(DDRObjectContract.ID, exampleDDRObject);
+                tx.output(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 tx.tweak(tw -> {
                     tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(examplePledgeApproved).requester(bankB.getParty()).build());
                     return tw.failsWith("Input and output DDRObligationState should have same attributes except Status");

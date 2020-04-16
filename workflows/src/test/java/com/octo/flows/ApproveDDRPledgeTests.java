@@ -2,8 +2,10 @@ package com.octo.flows;
 
 import com.google.common.collect.ImmutableList;
 import com.octo.enums.DDRObligationStatus;
-import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObligationState;
+import com.octo.utils.DDRUtils;
+import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
+import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType;
 import net.corda.core.concurrent.CordaFuture;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.ContractState;
@@ -38,12 +40,13 @@ public class ApproveDDRPledgeTests {
 
     private final MockNetwork network = new MockNetwork(new MockNetworkParameters(ImmutableList.of(
             TestCordapp.findCordapp("com.octo.contracts"),
-            TestCordapp.findCordapp("com.octo.flows")
+            TestCordapp.findCordapp("com.octo.flows"),
+            TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts")
     )));
     private final StartedMockNode a = network.createNode(CordaX500Name.parse("O=BankA,L=New York,C=US"));
     private final StartedMockNode bc = network.createNode(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
     private String externalId;
-    private final Amount<Currency> amount = new Amount<Currency>(1000, Currency.getInstance("MAD"));
+    private final Amount<Currency> amount = DDRUtils.buildDirham(1000);
 
     public ApproveDDRPledgeTests() {
         a.registerInitiatedFlow(ApproveDDRPledge.Responder.class);
@@ -156,13 +159,18 @@ public class ApproveDDRPledgeTests {
                     .getTransaction(signedTx.getId()).toLedgerTransaction(node.getServices());
 
             DDRObligationState consumedState = recordedTx.inputsOfType(DDRObligationState.class).get(0);
-            List<DDRObjectState> recordedObjects = recordedTx.outputsOfType(DDRObjectState.class);
+            List<FungibleToken> recordedObjects = recordedTx.outputsOfType(FungibleToken.class);
 
-            assertEquals(consumedState.getAmount(), recordedObjects.stream().map(DDRObjectState::getAmount).reduce(Amount::plus).get());
+
+            Amount<Currency> consumedAmount = consumedState.getAmount();
+            Amount<IssuedTokenType> producedCumulatedAmount =  recordedObjects.stream().map(FungibleToken::getAmount).reduce(Amount::plus).get();
+            assertEquals(consumedAmount.getQuantity(), producedCumulatedAmount.getQuantity());
+            assertEquals(consumedState.getAmount().getToken().getCurrencyCode(),
+                   producedCumulatedAmount.getToken().getTokenType().getTokenIdentifier());
             recordedObjects.forEach(object -> {
                 assertEquals(consumedState.getIssuer(), object.getIssuer());
-                assertEquals(consumedState.getOwner(), object.getOwner());
-                assertEquals(consumedState.getCurrency(), object.getCurrency());
+                assertEquals(consumedState.getOwner(), object.getHolder());
+                assertEquals(consumedState.getCurrency().getCurrencyCode(), object.getAmount().getToken().getTokenType().getTokenIdentifier());
             });
         }
     }

@@ -1,14 +1,19 @@
 package com.octo.states;
 
+import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
+import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType;
+import com.r3.corda.lib.tokens.contracts.types.TokenType;
+import com.r3.corda.lib.tokens.contracts.utilities.AmountUtilitiesKt;
+import com.r3.corda.lib.tokens.contracts.utilities.TransactionUtilitiesKt;
+import com.r3.corda.lib.tokens.money.FiatCurrency;
+import net.corda.core.contracts.Amount;
 import net.corda.core.identity.Party;
 
 import java.util.Currency;
-import java.util.Date;
 
 public class DDRObjectStateBuilder {
 
     Party issuer;
-    Date issuerDate;
     long amount;
     Currency currency;
     Party owner;
@@ -17,21 +22,15 @@ public class DDRObjectStateBuilder {
 
     }
 
-    public DDRObjectStateBuilder(DDRObjectState state) {
+    public DDRObjectStateBuilder(FungibleToken state) {
         issuer = state.getIssuer();
-        issuerDate = state.getIssuerDate();
         amount = state.getAmount().getQuantity();
-        owner = (Party) state.getOwner();
-        currency = state.getAmount().getToken();
+        owner = (Party) state.getHolder();
+        currency = Currency.getInstance( state.getAmount().getToken().getTokenType().getTokenIdentifier());
     }
 
     public DDRObjectStateBuilder issuer(Party issuer) {
         this.issuer = issuer;
-        return this;
-    }
-
-    public DDRObjectStateBuilder issuerDate(Date issuerDate) {
-        this.issuerDate = issuerDate;
         return this;
     }
 
@@ -50,15 +49,16 @@ public class DDRObjectStateBuilder {
         return this;
     }
 
-    public DDRObjectState build() {
-        DDRObjectState ddrObjectState = new DDRObjectState(this);
-        validateDDRObjectState(ddrObjectState);
-        return ddrObjectState;
+    public FungibleToken build() {
+        TokenType token = FiatCurrency.Companion.getInstance(currency.getCurrencyCode());
+
+        IssuedTokenType issuedTokenType = new IssuedTokenType(issuer, token);
+
+        //specify how much amount to issue to holder
+        Amount<IssuedTokenType> amount = AmountUtilitiesKt.amount(this.amount, issuedTokenType);
+
+        //create fungible amount specifying the new owner
+        return new FungibleToken(amount, owner, TransactionUtilitiesKt.getAttachmentIdForGenericParam(token));
     }
 
-    private void validateDDRObjectState(DDRObjectState state) {
-        if (state.getIssuer() != null && state.getIssuerDate() != null &&state.getAmount() != null && state.getOwner() != null)
-            return;
-        throw new IllegalArgumentException("DDRObjectState cannot have null fields");
-    }
 }

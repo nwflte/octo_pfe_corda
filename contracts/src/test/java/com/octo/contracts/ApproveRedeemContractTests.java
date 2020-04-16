@@ -3,6 +3,7 @@ package com.octo.contracts;
 import com.google.common.collect.ImmutableList;
 import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationStateBuilder;
+import com.r3.corda.lib.tokens.contracts.FungibleTokenContract;
 import org.junit.Test;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
@@ -17,7 +18,7 @@ public class ApproveRedeemContractTests extends BaseObligationContractTests {
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRRedeem());
 
                 tx.input(DDRObligationContract.ID, exampleRedeemRequest);
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 tx.failsWith("1 output of type DDRObligationState must be created when approving DDR Redeem");
 
                 tx.tweak(tw -> {
@@ -47,11 +48,11 @@ public class ApproveRedeemContractTests extends BaseObligationContractTests {
                 tx.output(DDRObligationContract.ID, exampleRedeemApproved);
 
                 tx.tweak(tw -> {
-                    tw.input(DDRObjectContract.ID, new DDRObjectStateBuilder(exampleDDRObject).amount(999).build());
+                    tw.input(FungibleTokenContract.Companion.getContractId(), new DDRObjectStateBuilder(exampleDDRObject).amount(999).build());
                     return tw.failsWith("Redeemed amount should be equal to total amount of consumed DDR Objects");
                 });
 
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 return tx.verifies();
             });
             return null;
@@ -68,7 +69,7 @@ public class ApproveRedeemContractTests extends BaseObligationContractTests {
 
                 tx.output(DDRObligationContract.ID, exampleRedeemApproved);
 
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
 
                 tx.failsWith("1 input of type DDRObligationState should be consumed when approving DDR Redeem");
 
@@ -100,7 +101,7 @@ public class ApproveRedeemContractTests extends BaseObligationContractTests {
 
 
                 tx.input(DDRObligationContract.ID, exampleRedeemRequest);
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 tx.tweak(tw -> {
                     tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(exampleRedeemApproved).externalId("differentExternalId").build());
                     return tw.failsWith("Input and output DDRObligationState should have same ExternalId");
@@ -121,7 +122,7 @@ public class ApproveRedeemContractTests extends BaseObligationContractTests {
                         new DDRObligationContract.DDRObligationCommands.ApproveDDRRedeem());
 
                 tx.input(DDRObligationContract.ID, exampleRedeemRequest);
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
                 tx.tweak(tw -> {
                     tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(exampleRedeemApproved).requester(bankB.getParty()).build());
                     return tw.failsWith("Input and output DDRObligationState should have same attributes except Status");

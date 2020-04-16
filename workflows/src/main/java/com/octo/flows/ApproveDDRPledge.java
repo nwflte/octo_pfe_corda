@@ -1,13 +1,13 @@
 package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
-import com.octo.contracts.DDRObjectContract;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
-import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationState;
 import com.octo.states.DDRObligationStateBuilder;
+import com.r3.corda.lib.tokens.contracts.states.FungibleToken;
+import com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensUtilitiesKt;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;
@@ -22,7 +22,10 @@ import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ApproveDDRPledge {
@@ -47,6 +50,7 @@ public class ApproveDDRPledge {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
+
             // Initiator flow logic goes here.
             QueryCriteria queryCriteria = new QueryCriteria.LinearStateQueryCriteria().withStatus(Vault.StateStatus.UNCONSUMED)
                     .withExternalId(Collections.singletonList(externalId));
@@ -68,7 +72,15 @@ public class ApproveDDRPledge {
                             DDRObligationContract.ID)
                     .addCommand(new DDRObligationContract.DDRObligationCommands.ApproveDDRPledge(), requiredSigners);
 
-            produceDDRObjects(inputPledge).forEach(ddr -> txBuilder.addOutputState(ddr, DDRObjectContract.ID));
+            IssueTokensUtilitiesKt.addIssueTokens(txBuilder, produceDDRObjects(inputPledge));
+
+            /*List<FungibleToken> produced = produceDDRObjects(inputPledge);
+
+            // TODO Case where list size is 0
+            txBuilder.addCommand(new IssueTokenCommand(new IssuedTokenType(getOurIdentity(), FiatCurrency.Companion.getInstance("MAD")),
+                    IntStream.range(1, produced.size()+1).boxed().collect(Collectors.toList())) , requiredSigners);
+
+            produceDDRObjects(inputPledge).forEach(ddr -> txBuilder.addOutputState(ddr, FungibleTokenContract.Companion.getContractId()));*/
 
             txBuilder.verify(getServiceHub());
 
@@ -88,18 +100,18 @@ public class ApproveDDRPledge {
          *
          * @return
          */
-        private List<DDRObjectState> produceDDRObjects(DDRObligationState obligationState) {
+        private List<FungibleToken> produceDDRObjects(DDRObligationState obligationState) {
             Amount<Currency> amount = obligationState.getAmount();
             long quantity = amount.getQuantity(); // For exmaple 1000 token
             DDRObjectStateBuilder builder = new DDRObjectStateBuilder();
-            builder.issuer(obligationState.getIssuer()).issuerDate(new Date()).owner(obligationState.getOwner())
+            builder.issuer(obligationState.getIssuer()).owner(obligationState.getOwner())
                     .currency(obligationState.getCurrency());
             if (quantity > 1000) {
                 int numberOfTokens = (int) Math.ceil((double) quantity / 1000);
-                return amount.splitEvenly(numberOfTokens).stream().map(am -> builder.amount(am.getQuantity()).build()).collect(Collectors.toList());
+                return amount.splitEvenly(numberOfTokens).stream().map(am -> builder.amount(am.getQuantity()/100).build()).collect(Collectors.toList());
             }
 
-            return Collections.singletonList(builder.amount(quantity).build());
+            return Collections.singletonList(builder.amount(quantity/100).build());
         }
     }
 
@@ -107,7 +119,7 @@ public class ApproveDDRPledge {
     // ******************
     // * Responder flow *
     // ******************
-    @InitiatedBy(com.octo.flows.ApproveDDRPledge.Initiator.class)
+    @InitiatedBy(Initiator.class)
     public static class Responder extends FlowLogic<SignedTransaction> {
         private final FlowSession counterpartySession;
 

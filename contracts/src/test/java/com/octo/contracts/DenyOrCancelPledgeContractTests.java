@@ -1,6 +1,7 @@
 package com.octo.contracts;
 
 import com.google.common.collect.ImmutableList;
+import com.r3.corda.lib.tokens.contracts.FungibleTokenContract;
 import org.junit.Test;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;
@@ -28,7 +29,7 @@ public class DenyOrCancelPledgeContractTests extends BaseObligationContractTests
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
                 tx.verifies();
 
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
 
                 return tx.failsWith("Only 1 input of type DDRObligationState should be consumed when denying or canceling DDR Pledge");
             });
@@ -57,7 +58,7 @@ public class DenyOrCancelPledgeContractTests extends BaseObligationContractTests
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
                 tx.verifies();
 
-                tx.input(DDRObjectContract.ID, exampleDDRObject);
+                tx.input(FungibleTokenContract.Companion.getContractId(), exampleDDRObject);
 
                 return tx.failsWith("Only 1 input of type DDRObligationState should be consumed when denying or canceling DDR Pledge");
             });

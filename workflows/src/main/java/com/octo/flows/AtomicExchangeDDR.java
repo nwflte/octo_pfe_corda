@@ -2,27 +2,26 @@ package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.octo.contracts.InterBankTransferContract;
-import com.octo.states.DDRObjectState;
-import com.octo.states.DDRObjectStateBuilder;
 import com.octo.states.InterBankTransferState;
+import com.r3.corda.lib.tokens.money.FiatCurrency;
+import com.r3.corda.lib.tokens.workflows.flows.move.MoveTokensUtilitiesKt;
 import net.corda.core.contracts.Amount;
-import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.node.StatesToRecord;
 import net.corda.core.node.services.VaultService;
-import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
-import net.corda.core.utilities.NonEmptySet;
 import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
 
 public class AtomicExchangeDDR {
 
@@ -58,16 +57,7 @@ public class AtomicExchangeDDR {
             VaultService vaultService = getServiceHub().getVaultService();
             centralBank = getServiceHub().getNetworkMapCache().getPeerByLegalName(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
 
-            QueryCriteria vaultCriteria = new QueryCriteria.VaultQueryCriteria()
-                    .withSoftLockingCondition(new QueryCriteria.SoftLockingCondition(QueryCriteria.SoftLockingType.UNLOCKED_ONLY, Collections.emptyList()))
-                    .withExactParticipants(Arrays.asList(getOurIdentity(), centralBank));
-
             List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), centralBank.getOwningKey(), receiverBank.getOwningKey());
-
-            List<StateAndRef<DDRObjectState>> toArchiveDDR = vaultService.queryBy(DDRObjectState.class, vaultCriteria).getStates();
-
-            vaultService.softLockRelease(getRunId().getUuid(), NonEmptySet.copyOf(toArchiveDDR.stream()
-                    .map(StateAndRef::getRef).collect(Collectors.toList())));
 
             InterBankTransferState transferState = new InterBankTransferState(senderRIB, receiverRIB, getOurIdentity(),
                     receiverBank, amount, executionDate, executionDate + senderRIB.substring(0, 5) + receiverRIB.substring(0, 5));
@@ -76,9 +66,9 @@ public class AtomicExchangeDDR {
                     .addOutputState(transferState)
                     .addCommand(new InterBankTransferContract.InterBankTransferCommands.BankTransfer(), requiredSigners);
 
-            long addedAmount = addInputDDRToTransaction(txBuilder, toArchiveDDR, amount.getQuantity());
-            boolean isTxBalanced = addRestDDROutput(addedAmount, txBuilder, transferState);
-            addOutputDDRToTransaction(txBuilder, transferState);
+            MoveTokensUtilitiesKt.addMoveFungibleTokens(txBuilder, getServiceHub(),
+                    new Amount<>(amount.getQuantity(), FiatCurrency.Companion.getInstance("MAD")),
+                    receiverBank, getOurIdentity());
 
             txBuilder.verify(getServiceHub());
 
@@ -92,50 +82,12 @@ public class AtomicExchangeDDR {
             return subFlow(new FinalityFlow(fullySignedTx, Arrays.asList(centralBankSession, receiverBankSession), StatesToRecord.ALL_VISIBLE));
         }
 
-        private long addInputDDRToTransaction(TransactionBuilder txBuilder, List<StateAndRef<DDRObjectState>> queriedDDRs, long amount){
-            long summed = 0;
-            for(StateAndRef<DDRObjectState> ddr : queriedDDRs){
-                if ( summed >= amount) return summed;
-                txBuilder.addInputState(ddr);
-                summed += ddr.getState().getData().getAmount().getQuantity();
-            }
-            return summed;
-        }
-
-        private void addOutputDDRToTransaction(TransactionBuilder txBuilder, InterBankTransferState transferState){
-            produceDDRObjects(transferState).forEach(ddr -> txBuilder.addOutputState(ddr));
-        }
-
-        private List<DDRObjectState> produceDDRObjects(InterBankTransferState transferState) {
-            Amount<Currency> transferAmount = transferState.getAmount();
-            long quantity = transferAmount.getQuantity(); // For exmaple 1000 token
-            DDRObjectStateBuilder builder = new DDRObjectStateBuilder();
-            builder.issuer(centralBank).issuerDate(new Date()).owner(transferState.getReceiverBank())
-                    .currency(transferAmount.getToken());
-            if (quantity >= 1000) {
-                int numberOfTokens = (int) Math.ceil((double) quantity / 1000);
-                return transferAmount.splitEvenly(numberOfTokens).stream().map(am -> builder.amount(am.getQuantity()).build()).collect(Collectors.toList());
-            }
-            return Collections.singletonList(builder.amount(quantity).build());
-        }
-
-        private boolean addRestDDROutput(long consumedAmount, TransactionBuilder txBuilder, InterBankTransferState transferState){
-            long amountToTransfer = transferState.getAmount().getQuantity();
-            if(consumedAmount == amountToTransfer) return true;
-            else if (consumedAmount < amountToTransfer) return false;
-            Date issuerDate = new Date();
-            DDRObjectState restDDR = new DDRObjectStateBuilder().owner(transferState.getSenderBank()).issuerDate(issuerDate)
-                    .issuer(centralBank).currency(transferState.getAmount().getToken()).amount(consumedAmount - amountToTransfer).build();
-            txBuilder.addOutputState(restDDR);
-            return true;
-        }
-
     }
 
     // ******************
     // * Responder flow *
     // ******************
-    @InitiatedBy(com.octo.flows.AtomicExchangeDDR.Initiator.class)
+    @InitiatedBy(Initiator.class)
     public static class CentralBankResponder extends FlowLogic<SignedTransaction> {
         private final FlowSession counterpartySession;
 

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
 import com.octo.states.DDRObligationState;
+import com.octo.utils.DDRUtils;
 import net.corda.core.concurrent.CordaFuture;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.ContractState;
@@ -38,13 +39,14 @@ public class ApproveDDRRedeemTests {
 
     private final MockNetwork network = new MockNetwork(new MockNetworkParameters(ImmutableList.of(
             TestCordapp.findCordapp("com.octo.contracts"),
-            TestCordapp.findCordapp("com.octo.flows")
+            TestCordapp.findCordapp("com.octo.flows"),
+            TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts")
     )));
     private final StartedMockNode a = network.createNode(CordaX500Name.parse("O=BankA,L=New York,C=US"));
     private final StartedMockNode bc = network.createNode(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
     private String externalId;
-    private Amount<Currency> amount3200 =  new Amount<Currency>(1500, Currency.getInstance("MAD"));
-    private Amount<Currency> amount1000 =  new Amount<Currency>(500, Currency.getInstance("MAD"));
+    private Amount<Currency> amount3200 = DDRUtils.buildDirham(1500);
+    private Amount<Currency> amount1000 =  DDRUtils.buildDirham(500);
 
     public ApproveDDRRedeemTests() {
         a.registerInitiatedFlow(ApproveDDRRedeem.Responder.class);
