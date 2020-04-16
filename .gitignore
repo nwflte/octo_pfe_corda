@@ -31,6 +31,7 @@ lib/dokka.jar
 .idea/copyright
 .idea/jsLibraryMappings.xml
 .idea/sonarlint
+.idea/shelf
 
 # User-specific stuff:
 .idea/tasks.xml
@@ -80,3 +81,4 @@ lib
 # Project exclude paths
 /contracts/bin/main/
 /workflows/bin/main/
+/.idea/sonarlint/issuestore/
