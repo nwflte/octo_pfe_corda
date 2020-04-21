@@ -116,6 +116,8 @@ sourceSets {
 }
 
 dependencies {
+    testCompile "junit:junit:$junit_version"
+
     // Corda dependencies.
     cordaCompile "$corda_core_release_group:corda-core:$corda_core_release_version"
     cordaCompile "$corda_release_group:corda-node-api:$corda_release_version"
@@ -125,9 +127,16 @@ dependencies {
     cordapp project(":workflows")
     cordapp project(":contracts")
 
+    // Logging
     cordaCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
     cordaCompile "org.apache.logging.log4j:log4j-web:${log4j_version}"
     cordaCompile "org.slf4j:jul-to-slf4j:$slf4j_version"
+
+    // Token SDK dependencies.
+    cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
+    cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
+    cordapp "$tokens_release_group:tokens-money:$tokens_release_version"
+    cordapp "$tokens_release_group:tokens-selection:$tokens_release_version"
 }
 
 cordapp {
@@ -136,6 +145,20 @@ cordapp {
         vendor "Corda Open Source"
         targetPlatformVersion corda_platform_version
         minimumPlatformVersion corda_platform_version
+    }
+}
+
+task ganache {
+    subprojects {
+        if (it.project.name != "clients") {
+            dependsOn jar
+            doLast {
+                copy {
+                    from "${buildDir}/libs"
+                    into "${rootDir}/build/libs"
+                }
+            }
+        }
     }
 }
 
@@ -198,6 +221,10 @@ task prepareDockerNodes(type: net.corda.plugins.Dockerform, dependsOn: ['jar']) 
         }
         cordapp project(':contracts')
         cordapp project(':workflows')
+        cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
+        cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
+        cordapp "$tokens_release_group:tokens-money:$tokens_release_version"
+        cordapp "$tokens_release_group:tokens-selection:$tokens_release_version"
     }
     node {
         name "O=Notary,L=London,C=GB"
