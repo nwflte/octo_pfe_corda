@@ -4,6 +4,7 @@ import co.paralleluniverse.fibers.Suspendable;
 import com.octo.contracts.InterBankTransferContract;
 import com.octo.states.*;
 import net.corda.core.contracts.Amount;
+import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
 import net.corda.core.identity.Party;
@@ -66,31 +67,42 @@ public class AtomicExchangeDDR {
         @Suspendable
         private TransactionBuilder exchangeTx(InterBankTransferState state) throws FlowException {
 
-            List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), centralBank.getOwningKey());
+            List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), centralBank.getOwningKey(),
+                    receiverBank.getOwningKey());
 
             TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0))
                     .addOutputState(state)
                     .addCommand(new InterBankTransferContract.InterBankTransferCommands.BankTransfer(), requiredSigners);
 
-            AtomicLong totalAmountConsumed = new AtomicLong(0L);
-            Utils.selectDDRs(getOurIdentity(), amount, getServiceHub(), txBuilder.getLockId()).forEach(ddr -> {
+            long totalAmountConsumed = 0;
+            List<StateAndRef<DDRObjectState>> ddrs = Utils.selectDDRs(getOurIdentity(), amount, getServiceHub(), txBuilder.getLockId());
+            int lastIndex = ddrs.size() - 1;
+            /*
+            Add All DDRs but the last one to the receiver bank
+             */
+            for(int i = 0; i < ddrs.size() ; i++){
+                StateAndRef<DDRObjectState> ddr = ddrs.get(i);
                 txBuilder.addInputState(ddr);
-                txBuilder.addOutputState(changeOwner(ddr.getState().getData(), receiverBank));
-                totalAmountConsumed.addAndGet(ddr.getState().getData().getAmount().getQuantity());
-            });
-            return addRestDDROutput(txBuilder, totalAmountConsumed.get(), state);
+                totalAmountConsumed += ddr.getState().getData().getAmount().getQuantity();
+                if(i != lastIndex)
+                    txBuilder.addOutputState(changeOwner(ddr.getState().getData(), receiverBank));
+            }
+            long amountMissingSender = totalAmountConsumed - amount.getQuantity();
+            long amountMissingReceiver = amount.getQuantity() - totalAmountConsumed + ddrs.get(lastIndex).getState().getData().getAmount().getQuantity();
+            return addRestDDROutput(txBuilder, amountMissingSender, amountMissingReceiver);
         }
 
         private DDRObjectState changeOwner(DDRObjectState ddrObjectState, Party newOwner){
             return new DDRObjectStateBuilder(ddrObjectState).owner(newOwner).build();
         }
 
-        private TransactionBuilder addRestDDROutput(TransactionBuilder txBuilder, long consumedAmount, InterBankTransferState transferState){
-            long amountToTransfer = transferState.getAmount().getQuantity();
-            if(consumedAmount == amountToTransfer) return txBuilder;
-            DDRObjectState restDDR = new DDRObjectStateBuilder().owner(transferState.getSenderBank()).issuerDate(new Date())
-                    .issuer(centralBank).currency(transferState.getAmount().getToken()).amount(consumedAmount - amountToTransfer).build();
-            return txBuilder.addOutputState(restDDR);
+        private TransactionBuilder addRestDDROutput(TransactionBuilder txBuilder, long amountMissingSender, long amountMissingReceiver){
+            if(amountMissingSender == 0) return txBuilder;
+            DDRObjectStateBuilder builder = new DDRObjectStateBuilder();
+            DDRObjectState senderRestDDR = builder.owner(getOurIdentity()).issuerDate(new Date())
+                    .issuer(centralBank).currency(amount.getToken()).amount(amountMissingSender).build();
+            DDRObjectState receiverRestDDR = builder.owner(receiverBank).amount(amountMissingReceiver).build();
+            return txBuilder.addOutputState(senderRestDDR).addOutputState(receiverRestDDR);
         }
     }
 
