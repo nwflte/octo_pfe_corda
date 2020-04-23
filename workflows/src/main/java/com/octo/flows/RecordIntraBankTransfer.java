@@ -6,7 +6,6 @@ import com.octo.states.IntraBankTransferState;
 import net.corda.core.contracts.Amount;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
-import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.node.StatesToRecord;
 import net.corda.core.transactions.LedgerTransaction;
@@ -17,7 +16,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
 
 public class RecordIntraBankTransfer {
 
@@ -50,30 +52,24 @@ public class RecordIntraBankTransfer {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            final Party centralBank = getServiceHub().getNetworkMapCache().getPeerByLegalName(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
-            assert centralBank != null;
-            final FlowSession centralBankSession = initiateFlow(centralBank);
+            final Party centralBankParty = Utils.getCentralBankParty(getServiceHub());
+            final FlowSession centralBankSession = initiateFlow(centralBankParty);
 
-            TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
+            TransactionBuilder txBuilder = recordIntraTx(amount, senderRIB, receiverRIB, centralBankParty);
 
-            IntraBankTransferState transferState = new IntraBankTransferState(senderRIB, receiverRIB, getOurIdentity(), amount,
-                    executionDate, executionDate + senderRIB.substring(0, 5) + receiverRIB.substring(0, 5));
-
-            final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
-
-            txBuilder.addOutputState(transferState)
-                    .addCommand(new IntraBankTransferContract.IntraBankTransferCommands.RecordTransfer(), requiredSigners);
-
-            txBuilder.verify(getServiceHub());
-
-            final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
-
-            final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(centralBankSession)
-                    , CollectSignaturesFlow.Companion.tracker()));
+            final SignedTransaction fullySignedTx = subFlow(Utils.verifyAndCollectSignatures(txBuilder, getServiceHub(), centralBankSession));
 
             return subFlow(new FinalityFlow(fullySignedTx, centralBankSession));
         }
 
+        private TransactionBuilder recordIntraTx(Amount<Currency> amount, String senderRIB, String receiverRIB, Party centralBank) {
+            IntraBankTransferState transferState = new IntraBankTransferState(senderRIB, receiverRIB, getOurIdentity(), amount,
+                    executionDate, Utils.generateReference("INTRA"));
+            List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
+            return new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0))
+                    .addOutputState(transferState)
+                    .addCommand(new IntraBankTransferContract.IntraBankTransferCommands.RecordTransfer(), requiredSigners);
+        }
     }
 
     // ******************
@@ -94,7 +90,7 @@ public class RecordIntraBankTransfer {
             return subFlow(new ReceiveFinalityFlow(counterPartySession, txId, StatesToRecord.ALL_VISIBLE));
         }
 
-        private class CheckTransactionAndSignFlow extends SignTransactionFlow {
+        private static class CheckTransactionAndSignFlow extends SignTransactionFlow {
 
             public CheckTransactionAndSignFlow(@NotNull FlowSession otherSideSession, @NotNull ProgressTracker progressTracker) {
                 super(otherSideSession, progressTracker);

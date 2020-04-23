@@ -50,12 +50,12 @@ public class RequestDDRPledge {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            final Party centralBankParty = Util.getCentralBankParty(getServiceHub());
+            final Party centralBankParty = Utils.getCentralBankParty(getServiceHub());
             final FlowSession centralBankSession = initiateFlow(centralBankParty);
 
             final TransactionBuilder txBuilder = requestPledgeTx(amount, centralBankParty);
 
-            final SignedTransaction fullySignedTx = subFlow(Util.verifyAndCollectSignatures(txBuilder, getServiceHub(), centralBankSession));
+            final SignedTransaction fullySignedTx = subFlow(Utils.verifyAndCollectSignatures(txBuilder, getServiceHub(), centralBankSession));
 
             return subFlow(new FinalityFlow(fullySignedTx, centralBankSession));
         }
@@ -65,7 +65,7 @@ public class RequestDDRPledge {
             final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
 
             DDRObligationState ddrObligationState = new DDRObligationState(centralBank, getOurIdentity(), new Date(), amount, getOurIdentity(),
-                    DDRObligationType.PLEDGE, DDRObligationStatus.REQUEST, Util.generateReference(DDRObligationType.PLEDGE));
+                    DDRObligationType.PLEDGE, DDRObligationStatus.REQUEST, Utils.generateReference("PLEDGE"));
             return txBuilder.addOutputState(ddrObligationState, DDRObligationContract.ID)
                     .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRPledge(), requiredSigners);
         }

@@ -6,10 +6,7 @@ import com.octo.states.DDRObligationState;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
-import net.corda.core.identity.Party;
 import net.corda.core.node.StatesToRecord;
-import net.corda.core.node.services.Vault;
-import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
@@ -42,32 +39,29 @@ public class DenyDDRPledge {
         @Override
         public SignedTransaction call() throws FlowException {
             // Initiator flow logic goes here.
-            QueryCriteria queryCriteria = new QueryCriteria.LinearStateQueryCriteria(null, null,
-                    Collections.singletonList(externalId), Vault.StateStatus.UNCONSUMED);
-            List<StateAndRef<DDRObligationState>> inputStateAndRefs = getServiceHub().getVaultService()
-                    .queryBy(DDRObligationState.class, queryCriteria).getStates();
+            final StateAndRef<DDRObligationState> requestStateAndRef = Utils.getObligationByExternalId(externalId, getServiceHub());
 
-            final StateAndRef<DDRObligationState> ddrObligationStateStateAndRef = inputStateAndRefs.get(0);
-            final DDRObligationState ddrObligationState = inputStateAndRefs.get(0).getState().getData();
+            TransactionBuilder txBuilder = denyPledgeTx(requestStateAndRef);
 
-            final Party ownerBank = ddrObligationState.getOwner();
+            final FlowSession requesterSession = initiateRequesterFlowSession(requestStateAndRef);
 
-            List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), ownerBank.getOwningKey());
+            SignedTransaction fullySignedTx = subFlow(Utils.verifyAndCollectSignatures(txBuilder, getServiceHub(), requesterSession));
 
-            TransactionBuilder txBuilder = new TransactionBuilder(ddrObligationStateStateAndRef.getState().getNotary())
-                    .addInputState(ddrObligationStateStateAndRef)
+            return subFlow(new FinalityFlow(fullySignedTx, Collections.singletonList(requesterSession), StatesToRecord.ALL_VISIBLE));
+        }
+
+        private TransactionBuilder denyPledgeTx(StateAndRef<DDRObligationState> inputStateAndRef) {
+            final DDRObligationState inputState = inputStateAndRef.getState().getData();
+
+            final List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), inputState.getRequester().getOwningKey());
+            return new TransactionBuilder(inputStateAndRef.getState().getNotary())
+                    .addInputState(inputStateAndRef)
                     .addCommand(new DDRObligationContract.DDRObligationCommands.DenyDDRPledge(), requiredSigners);
+        }
 
-            txBuilder.verify(getServiceHub());
-
-            SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
-
-            final FlowSession ownerBankSession = initiateFlow(ownerBank);
-
-            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(ownerBankSession),
-                    CollectSignaturesFlow.Companion.tracker()));
-
-            return subFlow(new FinalityFlow(fullySignedTx, Collections.singletonList(ownerBankSession), StatesToRecord.ALL_VISIBLE));
+        @Suspendable
+        private FlowSession initiateRequesterFlowSession(StateAndRef<DDRObligationState> inputStateAndRef){
+            return initiateFlow(inputStateAndRef.getState().getData().getRequester());
         }
     }
 

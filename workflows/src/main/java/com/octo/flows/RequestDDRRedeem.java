@@ -8,7 +8,6 @@ import com.octo.states.DDRObligationState;
 import net.corda.core.contracts.Amount;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
-import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.node.StatesToRecord;
 import net.corda.core.transactions.LedgerTransaction;
@@ -48,28 +47,25 @@ public class RequestDDRRedeem {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            final Party centralBank = getServiceHub().getNetworkMapCache().getPeerByLegalName(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
-            final FlowSession centralBankSession = initiateFlow(centralBank);
+            final Party centralBankParty = Utils.getCentralBankParty(getServiceHub());
+            final FlowSession centralBankSession = initiateFlow(centralBankParty);
 
-            TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
+            final TransactionBuilder txBuilder = requestRedeemTx(amount, centralBankParty);
 
-            String externalId = getOurIdentity().toString().concat(" Redeem " + requesterDate.toString());
-            DDRObligationState ddrObligationState = new DDRObligationState(centralBank, getOurIdentity(), requesterDate,
-                    amount, getOurIdentity(), DDRObligationType.REDEEM, DDRObligationStatus.REQUEST, externalId);
-
-            final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
-
-            txBuilder.addOutputState(ddrObligationState, DDRObligationContract.ID)
-                    .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRRedeem(), requiredSigners);
-
-            txBuilder.verify(getServiceHub());
-
-            final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
-
-            final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(centralBankSession)
-                    , CollectSignaturesFlow.Companion.tracker()));
+            final SignedTransaction fullySignedTx = subFlow(Utils.verifyAndCollectSignatures(txBuilder, getServiceHub(), centralBankSession));
 
             return subFlow(new FinalityFlow(fullySignedTx, centralBankSession));
+        }
+
+        private TransactionBuilder requestRedeemTx(Amount<Currency> amount, Party centralBank) {
+            TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
+            final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
+
+            DDRObligationState redeemState = new DDRObligationState(centralBank, getOurIdentity(), new Date(), amount,
+                    getOurIdentity(), DDRObligationType.REDEEM, DDRObligationStatus.REQUEST, Utils.generateReference("REDEEM"));
+
+            return txBuilder.addOutputState(redeemState)
+                    .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRRedeem(), requiredSigners);
         }
 
     }
@@ -93,7 +89,7 @@ public class RequestDDRRedeem {
             return subFlow(new ReceiveFinalityFlow(counterPartySession, txId, StatesToRecord.ALL_VISIBLE));
         }
 
-        private class CheckTransactionAndSignFlow extends SignTransactionFlow {
+        private static class CheckTransactionAndSignFlow extends SignTransactionFlow {
 
             public CheckTransactionAndSignFlow(@NotNull FlowSession otherSideSession, @NotNull ProgressTracker progressTracker) {
                 super(otherSideSession, progressTracker);
