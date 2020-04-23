@@ -8,7 +8,6 @@ import com.octo.states.DDRObligationState;
 import net.corda.core.contracts.Amount;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
-import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.node.StatesToRecord;
 import net.corda.core.transactions.LedgerTransaction;
@@ -19,7 +18,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
 
 public class RequestDDRPledge {
 
@@ -48,30 +50,26 @@ public class RequestDDRPledge {
         @Suspendable
         @Override
         public SignedTransaction call() throws FlowException {
-            final Party centralBank = getServiceHub().getNetworkMapCache().getPeerByLegalName(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
-            assert centralBank != null;
-            final FlowSession centralBankSession = initiateFlow(centralBank);
+            final Party centralBankParty = Util.getCentralBankParty(getServiceHub());
+            final FlowSession centralBankSession = initiateFlow(centralBankParty);
 
-            TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
+            final TransactionBuilder txBuilder = requestPledgeTx(amount, centralBankParty);
 
-            String externalId = getOurIdentity().toString().concat(" Pledge " + requesterDate.toString());
-            DDRObligationState ddrObligationState = new DDRObligationState(centralBank, getOurIdentity(), requesterDate,
-                    amount, getOurIdentity(), DDRObligationType.PLEDGE, DDRObligationStatus.REQUEST, externalId);
-
-            final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
-
-            txBuilder.addOutputState(ddrObligationState, DDRObligationContract.ID)
-                    .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRPledge(), requiredSigners);
-
-            txBuilder.verify(getServiceHub());
-
-            final SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
-
-            final SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, Collections.singletonList(centralBankSession)
-                    , CollectSignaturesFlow.Companion.tracker()));
+            final SignedTransaction fullySignedTx = subFlow(Util.verifyAndCollectSignatures(txBuilder, getServiceHub(), centralBankSession));
 
             return subFlow(new FinalityFlow(fullySignedTx, centralBankSession));
         }
+
+        private TransactionBuilder requestPledgeTx(Amount<Currency> amount, Party centralBank) {
+            TransactionBuilder txBuilder = new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0));
+            final List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
+
+            DDRObligationState ddrObligationState = new DDRObligationState(centralBank, getOurIdentity(), new Date(), amount, getOurIdentity(),
+                    DDRObligationType.PLEDGE, DDRObligationStatus.REQUEST, Util.generateReference(DDRObligationType.PLEDGE));
+            return txBuilder.addOutputState(ddrObligationState, DDRObligationContract.ID)
+                    .addCommand(new DDRObligationContract.DDRObligationCommands.RequestDDRPledge(), requiredSigners);
+        }
+
 
     }
 
@@ -94,7 +92,7 @@ public class RequestDDRPledge {
             return subFlow(new ReceiveFinalityFlow(counterPartySession, txId, StatesToRecord.ALL_VISIBLE));
         }
 
-        private class CheckTransactionAndSignFlow extends SignTransactionFlow {
+        private static class CheckTransactionAndSignFlow extends SignTransactionFlow {
 
             public CheckTransactionAndSignFlow(@NotNull FlowSession otherSideSession, @NotNull ProgressTracker progressTracker) {
                 super(otherSideSession, progressTracker);
