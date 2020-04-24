@@ -3,6 +3,7 @@ package com.octo.flows;
 import co.paralleluniverse.fibers.Suspendable;
 import com.octo.states.DDRObjectState;
 import net.corda.core.contracts.Amount;
+import net.corda.core.contracts.InsufficientBalanceException;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.flows.FlowException;
 import net.corda.core.flows.FlowLogic;
@@ -62,9 +63,9 @@ public class DDRSelector {
         long requiredQuantity = requiredAmount.getQuantity();
         if (requiredQuantity == 0) return false;
 
-        long claimedAmount = 0;
+        long claimedQuantity = 0;
         int pageNumber = DEFAULT_PAGE_NUM;
-        PageSpecification pageSpec /*= new PageSpecification()*/;
+        PageSpecification pageSpec;
         Vault.Page<DDRObjectState> results;
         do {
             pageSpec = new PageSpecification(pageNumber, pageSize);
@@ -72,14 +73,14 @@ public class DDRSelector {
 
             for (StateAndRef<DDRObjectState> state : results.getStates()) {
                 stateAndRefs.add(state);
-                claimedAmount += state.getState().getData().getAmount().getQuantity();
-                if (claimedAmount >= requiredQuantity) break;
+                claimedQuantity += state.getState().getData().getAmount().getQuantity();
+                if (claimedQuantity >= requiredQuantity) break;
             }
             pageNumber++;
-        } while (claimedAmount < requiredQuantity && (pageSpec.getPageSize() * (pageNumber - 1)) <= results.getTotalStatesAvailable());
+        } while (claimedQuantity < requiredQuantity && (pageSpec.getPageSize() * (pageNumber - 1)) <= results.getTotalStatesAvailable());
 
         if (stateAndRefs.isEmpty()) return false;
-        if (claimedAmount < requiredQuantity) return false;
+        if (claimedQuantity < requiredQuantity) return false;
         serviceHub.getVaultService().softLockRelease(lockId, NonEmptySet.copyOf(stateAndRefs.stream().map(sar -> sar.getRef()).collect(Collectors.toList())));
         return true;
     }
@@ -95,10 +96,10 @@ public class DDRSelector {
         List<StateAndRef<DDRObjectState>> stateAndRefs = new ArrayList<>();
         for (int retryCount = 1; retryCount <= maxRetries; retryCount++) {
             if (executeQuery(requiredAmount, criteria, lockId, stateAndRefs)) break;
-            // TODO: Need to specify exactly why it fails.
+            // TODO: Need to specify exactly why it fails. If because there's not enough balance, no need to retry
 
             if (retryCount == maxRetries)
-                throw new InsufficientBalanceException("Insufficient spendable states identified for " + requiredAmount);
+                throw new InsufficientBalanceException(requiredAmount);
 
             stateAndRefs.clear();
             int durationMillis = Collections.min(Arrays.asList(retrySleep << retryCount, retryCap / 2)) * (int) (1.0 + Math.random());
@@ -107,9 +108,9 @@ public class DDRSelector {
         return stateAndRefs;
     }
 
-    public static class InsufficientBalanceException extends RuntimeException {
+    /*public static class InsufficientBalanceException extends RuntimeException {
         public InsufficientBalanceException(String message) {
             super(message);
         }
-    }
+    }*/
 }

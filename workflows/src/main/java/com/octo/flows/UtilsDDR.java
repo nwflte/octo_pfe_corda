@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+
 public class UtilsDDR {
     /**
      * Produces DDR Objects of 10DH, then if there's a rest it produces additional one of rest value
@@ -24,11 +27,8 @@ public class UtilsDDR {
         DDRObjectStateBuilder builder = new DDRObjectStateBuilder();
         builder.issuer(obligationState.getIssuer()).issuerDate(new Date()).owner(obligationState.getOwner())
                 .currency(obligationState.getCurrency());
-        if (quantity > 1000) {
-            int numberOfTokens = (int) Math.ceil((double) quantity / 1000);
-            return amount.splitEvenly(numberOfTokens).stream().map(am -> builder.amount(am.getQuantity()).build()).collect(Collectors.toList());
-        }
 
-        return Collections.singletonList(builder.amount(quantity).build());
+        return quantity <= 1000 ? singletonList(builder.amount(quantity).build()) :
+                amount.splitEvenly((int) (quantity/1000)).stream().map(am -> builder.amount(am.getQuantity()).build()).collect(toList());
     }
 }

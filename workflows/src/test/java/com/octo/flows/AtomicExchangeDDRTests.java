@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.octo.states.DDRObligationState;
 import net.corda.core.concurrent.CordaFuture;
 import net.corda.core.contracts.Amount;
+import net.corda.core.contracts.InsufficientBalanceException;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
@@ -60,7 +61,7 @@ public class AtomicExchangeDDRTests {
     }
 
     @Test
-    public void flowRecordsATransactionInBothPartiesTransactionStorages() throws Exception {
+    public void flowRecordsATransactionInAllPartiesTransactionStorages() throws Exception {
         Party receiver = b.getInfo().getLegalIdentities().get(0);
         AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator("senderRIB", "receiverRIB",receiver,
                 amount1000, new Date());
@@ -70,6 +71,18 @@ public class AtomicExchangeDDRTests {
         for (StartedMockNode node : ImmutableList.of(a, b, bc)) {
             assertEquals(signedTx, node.getServices().getValidatedTransactions().getTransaction(signedTx.getId()));
         }
+    }
+
+    // FIXME throws actually the exception but the test fails
+    @Test
+    public void insufficientBalanceThrowsException() throws Exception {
+        exception.expect(InsufficientBalanceException.class);
+        Party receiver = b.getInfo().getLegalIdentities().get(0);
+        AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator("senderRIB", "receiverRIB",receiver,
+                new Amount<Currency>(2000, Currency.getInstance("MAD")), new Date());
+        CordaFuture<SignedTransaction> future = a.startFlow(flow);
+        network.runNetwork();
+        SignedTransaction signedTx = future.get();
     }
 
 
