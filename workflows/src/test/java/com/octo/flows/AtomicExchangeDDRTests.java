@@ -16,6 +16,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockserver.client.server.MockServerClient;
+import org.mockserver.junit.MockServerRule;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 
 import java.util.Currency;
 import java.util.Date;
@@ -27,6 +31,11 @@ public class AtomicExchangeDDRTests {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public MockServerRule mockServerRule = new MockServerRule(this, 8081, 8082, 8083);
+
+    private MockServerClient mockServerClient;
 
     private final MockNetwork network = new MockNetwork(new MockNetworkParameters(ImmutableList.of(
             TestCordapp.findCordapp("com.octo.contracts"),
@@ -62,6 +71,13 @@ public class AtomicExchangeDDRTests {
 
     @Test
     public void flowRecordsATransactionInAllPartiesTransactionStorages() throws Exception {
+        mockServerClient.when(HttpRequest.request("/api/comptes/eligible"))
+                .respond(HttpResponse.response("true"));
+        mockServerClient.when(HttpRequest.request("/api/comptes/eligible"))
+                .respond(HttpResponse.response("true"));
+        mockServerClient.when(HttpRequest.request("/api/comptes/eligible"))
+                .respond(HttpResponse.response("true"));
+
         Party receiver = b.getInfo().getLegalIdentities().get(0);
         AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator("senderRIB", "receiverRIB",receiver,
                 amount1000, new Date());
