@@ -3,7 +3,9 @@
 This Cordapp is a money transfer platform on corda. It leverages Corda features to allow rapid and parallel transactions.
 Registering intra-bank and inter-bank payements with a regulatory body, making pledges and redeems.
 
-A REST API webserver to expose endpoints for different operations and interactions with the nodes, and an UI client will be provided to interact with the backend.
+A REST API webserver to expose endpoints for different operations and interactions with the nodes. \
+A Spring backend and UI client can be found in the link bellow to simulate a bank system interacting with the Corda Blockchain. 
+https://github.com/naoufal450/corda_pfe_backend_UI
 
 ## Components
 
@@ -82,8 +84,4 @@ Now, you can use the exposed endpoints to start flows and query states.
 Use IntelliJ and JDK 1.8 (Higher versions might work too, but it's recommanded to use 1.8), the run tests using gradle (If the project is set to run using IntelliJ, you go to `Build, Execution, Deployment -> Gradle` and set `Build and run using` and `Run tests using` to Gradle). There're now two kinds of tests: Contract tests and Flow tests, you can debug the code while tests are running.
 
 Or run from command line : `gradlew test`.
-
-
-// TODO : complete REST APIs and tests. | Test schemas | UI Client | Business rules validations in flows. |DDR selection mechanism.
-
 
