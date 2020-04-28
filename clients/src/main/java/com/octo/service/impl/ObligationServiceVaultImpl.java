@@ -91,9 +91,4 @@ public class ObligationServiceVaultImpl implements ObligationService {
         return proxy.startFlowDynamic(ApproveDDRRedeem.Initiator.class, externalId).getReturnValue().get();
     }
 
-    @Override
-    public String testHttp(String rib) throws ExecutionException, InterruptedException {
-        return proxy.startFlowDynamic(TestOracleFlow.class, rib).getReturnValue().get();
-    }
-
 }

@@ -102,9 +102,4 @@ public class ObligationController {
         return ResponseEntity.ok(signedTx.getId().toString());
     }
 
-    @GetMapping("test")
-    public ResponseEntity<String> testHttp() throws ExecutionException, InterruptedException {
-        String result = obligationService.testHttp("RIB111111");
-        return ResponseEntity.ok(result);
-    }
 }

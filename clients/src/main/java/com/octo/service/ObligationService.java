@@ -30,5 +30,4 @@ public interface ObligationService {
     SignedTransaction denyRedeem(String externalId) throws ExecutionException, InterruptedException;
     SignedTransaction approveRedeem(String externalId) throws ExecutionException, InterruptedException;
 
-    String testHttp(String rib) throws ExecutionException, InterruptedException;
 }
