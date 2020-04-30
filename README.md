@@ -4,8 +4,8 @@ This Cordapp is a money transfer platform on corda. It leverages Corda features 
 Registering intra-bank and inter-bank payements with a regulatory body, making pledges and redeems.
 
 A REST API webserver to expose endpoints for different operations and interactions with the nodes. \
-A Spring backend and UI client can be found in the link bellow to simulate a bank system interacting with the Corda Blockchain. 
-https://github.com/naoufal450/corda_pfe_backend_UI
+A Spring backend can be found in the link bellow to simulate a bank system interacting with the Corda Blockchain. 
+https://github.com/naoufal450/bank-operations
 
 ## Components
 
