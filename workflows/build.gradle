@@ -60,6 +60,8 @@ dependencies {
 
     // HTTP Client
     compile "org.apache.httpcomponents:httpclient:4.5.10"
+    compile 'com.rabbitmq:amqp-client:5.9.0'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.11.0'
 }
 
 task integrationTest(type: Test, dependsOn: []) {

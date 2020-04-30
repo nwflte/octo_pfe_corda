@@ -16,12 +16,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class AtomicExchangeDDR {
 
     @InitiatingFlow
     @StartableByRPC
+    @StartableByService
     public static class Initiator extends FlowLogic<SignedTransaction> {
 
         private final String senderRIB;
@@ -29,6 +29,7 @@ public class AtomicExchangeDDR {
         private final Party receiverBank;
         private final Amount<Currency> amount;
         private final Date executionDate;
+        private String reference = "";
         private final ProgressTracker progressTracker = new ProgressTracker();
         private Party centralBank;
 
@@ -38,6 +39,15 @@ public class AtomicExchangeDDR {
             this.receiverBank = receiverBank;
             this.amount = amount;
             this.executionDate = executionDate;
+        }
+
+        public Initiator(String senderRIB, String receiverRIB, Party receiverBank, Amount<Currency> amount, Date executionDate, String reference) {
+            this.senderRIB = senderRIB;
+            this.receiverRIB = receiverRIB;
+            this.receiverBank = receiverBank;
+            this.amount = amount;
+            this.executionDate = executionDate;
+            this.reference = reference;
         }
 
         @Override
@@ -50,8 +60,9 @@ public class AtomicExchangeDDR {
         public SignedTransaction call() throws FlowException {
             centralBank = Utils.getCentralBankParty(getServiceHub());
 
+            reference = reference.isEmpty() ? Utils.generateReference("INTER") : reference;
             InterBankTransferState state = new InterBankTransferState(senderRIB, receiverRIB, getOurIdentity(),
-                    receiverBank, amount, executionDate, Utils.generateReference("INTER"));
+                    receiverBank, amount, executionDate, reference);
 
             TransactionBuilder txBuilder = exchangeTx(state);
 
@@ -97,12 +108,16 @@ public class AtomicExchangeDDR {
         }
 
         private TransactionBuilder addRestDDROutput(TransactionBuilder txBuilder, long amountMissingSender, long amountMissingReceiver){
-            if(amountMissingSender == 0) return txBuilder;
-            DDRObjectStateBuilder builder = new DDRObjectStateBuilder();
-            DDRObjectState senderRestDDR = builder.owner(getOurIdentity()).issuerDate(new Date())
-                    .issuer(centralBank).currency(amount.getToken()).amount(amountMissingSender).build();
-            DDRObjectState receiverRestDDR = builder.owner(receiverBank).amount(amountMissingReceiver).build();
-            return txBuilder.addOutputState(senderRestDDR).addOutputState(receiverRestDDR);
+            DDRObjectStateBuilder builder = new DDRObjectStateBuilder().issuer(centralBank) .currency(amount.getToken()).issuerDate(new Date());
+            if(amountMissingSender != 0) {
+                DDRObjectState senderRestDDR = builder.owner(getOurIdentity()).amount(amountMissingSender).build();
+                txBuilder.addOutputState(senderRestDDR);
+            }
+            if(amountMissingReceiver != 0){
+                DDRObjectState receiverRestDDR = builder.owner(receiverBank).amount(amountMissingReceiver).build();
+                return txBuilder.addOutputState(receiverRestDDR);
+            }
+            return txBuilder;
         }
     }
 

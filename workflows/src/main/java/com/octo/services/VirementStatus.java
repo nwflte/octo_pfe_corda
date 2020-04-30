@@ -1,0 +1,5 @@
+package com.octo.services;
+
+public enum VirementStatus {
+    EXTERNE_PENDING_APPROVAL, EXTERNE_APPROVED, EXTERNE_REJECTED, INTERNE_NOT_SAVED, EXTERNE_SAVED
+}

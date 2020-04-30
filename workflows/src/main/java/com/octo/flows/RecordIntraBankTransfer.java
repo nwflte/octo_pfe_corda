@@ -28,14 +28,24 @@ public class RecordIntraBankTransfer {
     // ******************
     @InitiatingFlow
     @StartableByRPC
+    @StartableByService
     public static class Initiator extends FlowLogic<SignedTransaction> {
 
         private final String senderRIB;
         private final String receiverRIB;
         private final Amount<Currency> amount;
         private final Date executionDate;
+        private String reference = "";
 
         private final ProgressTracker progressTracker = new ProgressTracker();
+
+        public Initiator(Amount<Currency> amount, String senderRIB, String receiverRIB, Date executionDate, String reference) {
+            this.amount = amount;
+            this.senderRIB = senderRIB;
+            this.receiverRIB = receiverRIB;
+            this.executionDate = executionDate;
+            this.reference = reference;
+        }
 
         public Initiator(Amount<Currency> amount, String senderRIB, String receiverRIB, Date executionDate) {
             this.amount = amount;
@@ -63,8 +73,9 @@ public class RecordIntraBankTransfer {
         }
 
         private TransactionBuilder recordIntraTx(Amount<Currency> amount, String senderRIB, String receiverRIB, Party centralBank) {
+            reference = reference.isEmpty() ? Utils.generateReference("INTRA") : reference;
             IntraBankTransferState transferState = new IntraBankTransferState(senderRIB, receiverRIB, getOurIdentity(), amount,
-                    executionDate, Utils.generateReference("INTRA"));
+                    executionDate, reference);
             List<PublicKey> requiredSigners = Arrays.asList(centralBank.getOwningKey(), getOurIdentity().getOwningKey());
             return new TransactionBuilder(getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0))
                     .addOutputState(transferState)

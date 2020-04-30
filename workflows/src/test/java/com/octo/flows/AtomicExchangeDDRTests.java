@@ -36,8 +36,8 @@ public class AtomicExchangeDDRTests {
     private final StartedMockNode b = network.createNode(CordaX500Name.parse("O=BankB,L=New York,C=US"));
     private final StartedMockNode bc = network.createNode(CordaX500Name.parse("O=CentralBank,L=New York,C=US"));
     private String externalId;
-    private Amount<Currency> amount3200 =  new Amount<Currency>(1500, Currency.getInstance("MAD"));
-    private Amount<Currency> amount1000 =  new Amount<Currency>(500, Currency.getInstance("MAD"));
+    private Amount<Currency> amount3200 =  new Amount<Currency>(100000, Currency.getInstance("MAD"));
+    private Amount<Currency> amount1000 =  new Amount<Currency>(50000, Currency.getInstance("MAD"));
 
     public AtomicExchangeDDRTests() {
         a.registerInitiatedFlow(ApproveDDRPledge.Responder.class);
