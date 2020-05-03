@@ -63,8 +63,8 @@ public class AtomicExchangeDDRTests {
     @Test
     public void flowRecordsATransactionInAllPartiesTransactionStorages() throws Exception {
         Party receiver = b.getInfo().getLegalIdentities().get(0);
-        AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator("senderRIB", "receiverRIB",receiver,
-                amount1000, new Date());
+        AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator("0074444446513221",
+                "008231111132135131", amount1000, new Date());
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
         SignedTransaction signedTx = future.get();
@@ -78,8 +78,8 @@ public class AtomicExchangeDDRTests {
     public void insufficientBalanceThrowsException() throws Exception {
         exception.expect(InsufficientBalanceException.class);
         Party receiver = b.getInfo().getLegalIdentities().get(0);
-        AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator("senderRIB", "receiverRIB",receiver,
-                new Amount<Currency>(2000, Currency.getInstance("MAD")), new Date());
+        AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator("0074444446513221",
+                "008231111132135131", new Amount<Currency>(2000, Currency.getInstance("MAD")), new Date());
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
         SignedTransaction signedTx = future.get();

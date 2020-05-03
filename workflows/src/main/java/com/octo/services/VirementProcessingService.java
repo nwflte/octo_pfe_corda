@@ -182,8 +182,7 @@ public class VirementProcessingService extends SingletonSerializeAsToken {
             // TODO validate argument, choose receiver bank from RIB
             logger.info("Received transfer from queue and about to record it");
             Amount<Currency> amount = new Amount<>(dto.getAmount().longValue() * 100, Currency.getInstance("MAD"));
-            AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator(dto.getSenderRIB(), dto.getReceiverRIB(),
-                    bankB, amount, dto.getExecutionDate(), dto.getReference());
+            AtomicExchangeDDR.Initiator flow = new AtomicExchangeDDR.Initiator(dto.getSenderRIB(), dto.getReceiverRIB(), amount, dto.getExecutionDate(), dto.getReference());
             return serviceHub.startFlow(flow).getReturnValue().get();
         }
 

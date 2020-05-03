@@ -2,6 +2,7 @@ package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.octo.contracts.InterBankTransferContract;
+import com.octo.services.RIBService;
 import com.octo.states.*;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.StateAndRef;
@@ -26,25 +27,23 @@ public class AtomicExchangeDDR {
 
         private final String senderRIB;
         private final String receiverRIB;
-        private final Party receiverBank;
+        private Party receiverBank;
         private final Amount<Currency> amount;
         private final Date executionDate;
         private String reference = "";
         private final ProgressTracker progressTracker = new ProgressTracker();
         private Party centralBank;
 
-        public Initiator(String senderRIB, String receiverRIB, Party receiverBank, Amount<Currency> amount, Date executionDate) {
+        public Initiator(String senderRIB, String receiverRIB, Amount<Currency> amount, Date executionDate) {
             this.senderRIB = senderRIB;
             this.receiverRIB = receiverRIB;
-            this.receiverBank = receiverBank;
             this.amount = amount;
             this.executionDate = executionDate;
         }
 
-        public Initiator(String senderRIB, String receiverRIB, Party receiverBank, Amount<Currency> amount, Date executionDate, String reference) {
+        public Initiator(String senderRIB, String receiverRIB, Amount<Currency> amount, Date executionDate, String reference) {
             this.senderRIB = senderRIB;
             this.receiverRIB = receiverRIB;
-            this.receiverBank = receiverBank;
             this.amount = amount;
             this.executionDate = executionDate;
             this.reference = reference;
@@ -61,6 +60,11 @@ public class AtomicExchangeDDR {
             centralBank = Utils.getCentralBankParty(getServiceHub());
 
             reference = reference.isEmpty() ? Utils.generateReference("INTER") : reference;
+            receiverBank = getServiceHub().cordaService(RIBService.class).getPartyFromRIB(receiverRIB);
+            if(receiverBank == null) subFlow(new SyncIdentitiesFlow.Initiator());
+            receiverBank = getServiceHub().cordaService(RIBService.class).getPartyFromRIB(receiverRIB);
+            if(receiverBank == null) throw new FlowException("Can't find party for rib " + receiverRIB);
+
             InterBankTransferState state = new InterBankTransferState(senderRIB, receiverRIB, getOurIdentity(),
                     receiverBank, amount, executionDate, reference);
 
