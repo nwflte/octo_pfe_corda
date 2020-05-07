@@ -53,7 +53,7 @@ public class ApproveDDRPledgeTests {
     @Before
     public void setup() throws ExecutionException, InterruptedException {
         network.runNetwork();
-        RequestDDRPledge.Initiator flow = new RequestDDRPledge.Initiator(amount, new Date(new Date().getTime() - 86400000));
+        RequestDDRPledge.Initiator flow = new RequestDDRPledge.Initiator(amount);
 
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();

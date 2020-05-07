@@ -33,13 +33,11 @@ public class RequestDDRPledge {
     public static class Initiator extends FlowLogic<SignedTransaction> {
 
         private final Amount<Currency> amount;
-        private final Date requesterDate;
 
         private final ProgressTracker progressTracker = new ProgressTracker();
 
-        public Initiator(Amount<Currency> amount, Date requesterDate) {
+        public Initiator(Amount<Currency> amount) {
             this.amount = amount;
-            this.requesterDate = requesterDate;
         }
 
         @Override

@@ -15,6 +15,8 @@ public class DenyOrCancelRedeemContractTests extends BaseObligationContractTests
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.DenyDDRRedeem());
 
+                tx.output(DDRObligationContract.ID, exampleRedeemRejected);
+
                 tx.tweak(tw2 -> {
                     tw2.input(DDRObligationContract.ID, exampleRedeemApproved);
                     return tw2.failsWith("Input DDRObligationState should have status REQUEST");
@@ -43,6 +45,8 @@ public class DenyOrCancelRedeemContractTests extends BaseObligationContractTests
 
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.CancelDDRRedeem());
+
+                tx.output(DDRObligationContract.ID, exampleRedeemCanceled);
 
                 tx.tweak(tw2 -> {
                     tw2.input(DDRObligationContract.ID, exampleRedeemApproved);
@@ -73,10 +77,16 @@ public class DenyOrCancelRedeemContractTests extends BaseObligationContractTests
                 tx.input(DDRObligationContract.ID, exampleRedeemRequest);
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.DenyDDRRedeem());
-                tx.verifies();
-                tx.output(DDRObligationContract.ID, exampleRedeemRequest);
-                return tx.failsWith("No outputs must be created when denying or canceling DDR Redeem");
 
+                tx.failsWith("1 output of type DDRObligationState must be created when denying or canceling DDR Redeem");
+
+                tx.tweak(tw -> {
+                    tw.output(DDRObligationContract.ID, exampleRedeemCanceled);
+                    return tw.failsWith("Output DDRObligationState should have status REJECTED");
+                });
+
+                tx.output(DDRObligationContract.ID, exampleRedeemRejected);
+                return tx.verifies();
             });
             return null;
         }));
@@ -90,10 +100,16 @@ public class DenyOrCancelRedeemContractTests extends BaseObligationContractTests
                 tx.input(DDRObligationContract.ID, exampleRedeemRequest);
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.CancelDDRRedeem());
-                tx.verifies();
-                tx.output(DDRObligationContract.ID, exampleRedeemRequest);
-                return tx.failsWith("No outputs must be created when denying or canceling DDR Redeem");
 
+                tx.failsWith("1 output of type DDRObligationState must be created when denying or canceling DDR Redeem");
+
+                tx.tweak(tw -> {
+                    tw.output(DDRObligationContract.ID, exampleRedeemRejected);
+                    return tw.failsWith("Output DDRObligationState should have status CANCELED");
+                });
+
+                tx.output(DDRObligationContract.ID, exampleRedeemCanceled);
+                return tx.verifies();
             });
             return null;
         }));

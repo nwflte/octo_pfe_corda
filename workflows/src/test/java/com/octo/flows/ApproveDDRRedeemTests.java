@@ -57,7 +57,7 @@ public class ApproveDDRRedeemTests {
     public void setup() throws ExecutionException, InterruptedException {
         network.runNetwork();
 
-        RequestDDRPledge.Initiator flowPledge = new RequestDDRPledge.Initiator(amount3200, new Date(new Date().getTime() - 86400000));
+        RequestDDRPledge.Initiator flowPledge = new RequestDDRPledge.Initiator(amount3200);
         CordaFuture<SignedTransaction> futurePledge = a.startFlow(flowPledge);
         network.runNetwork();
 
@@ -65,7 +65,7 @@ public class ApproveDDRRedeemTests {
         bc.startFlow(new ApproveDDRPledge.Initiator(externalPlegeId));
         network.runNetwork();
 
-        RequestDDRRedeem.Initiator flowRedeem = new RequestDDRRedeem.Initiator(amount1000, new Date(new Date().getTime() - 86400000));
+        RequestDDRRedeem.Initiator flowRedeem = new RequestDDRRedeem.Initiator(amount1000);
         CordaFuture<SignedTransaction> futureRedeem = a.startFlow(flowRedeem);
         network.runNetwork();
         externalId = ((DDRObligationState) futureRedeem.get().getTx().getOutput(0)).getExternalId();
@@ -119,7 +119,7 @@ public class ApproveDDRRedeemTests {
             List<TransactionState<ContractState>> txOutputs = recordedTx.getOutputs();
             List<ContractState> txInputs = recordedTx.getInputStates();
             assertThat(txInputs.size(), greaterThan(1));
-            assertEquals(1, txOutputs.size());
+            assertThat(txOutputs.size(), greaterThan(1));
 
             DDRObligationState recordedState = recordedTx.outputsOfType(DDRObligationState.class).get(0);
             DDRObligationState consumedState = (DDRObligationState) txInputs.get(0);

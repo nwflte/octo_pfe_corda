@@ -100,12 +100,12 @@ public class InterBankTransferContractTest extends BaseObligationContractTests {
                 tx.output(DDRObjectContract.ID, new DDRObjectStateBuilder(ddr200).owner(bankB.getParty()).build());
 
                 tx.tweak(tw -> {
-                    tw.input(InterBankTransferContract.ID, new InterBankTransferStateBuilder(interTransfer1000).receiverBank(bankA.getParty()).build());
+                    tw.output(InterBankTransferContract.ID, new InterBankTransferStateBuilder(interTransfer1000).receiverBank(bankA.getParty()).build());
                     return tw.failsWith("Sender and receiver banks should be different in an interbank transfer");
                 });
 
                 tx.tweak(tw -> {
-                    tw.input(InterBankTransferContract.ID, new InterBankTransferStateBuilder(interTransfer1000).receiverRIB("senderRIB").build());
+                    tw.output(InterBankTransferContract.ID, new InterBankTransferStateBuilder(interTransfer1000).receiverRIB("senderRIB").build());
                     return tw.failsWith("Sender and receiver accounts should be different in an interbank transfer");
                 });
                 return null;

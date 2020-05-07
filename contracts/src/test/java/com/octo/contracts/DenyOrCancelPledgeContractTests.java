@@ -15,6 +15,8 @@ public class DenyOrCancelPledgeContractTests extends BaseObligationContractTests
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.DenyDDRPledge());
 
+                tx.output(DDRObligationContract.ID, examplePledgeRejected);
+
                 tx.tweak(tw2 -> {
                     tw2.input(DDRObligationContract.ID, examplePledgeApproved);
                     return tw2.failsWith("Input DDRObligationState should have status REQUEST");
@@ -44,6 +46,8 @@ public class DenyOrCancelPledgeContractTests extends BaseObligationContractTests
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.CancelDDRPledge());
 
+                tx.output(DDRObligationContract.ID, examplePledgeCanceled);
+
                 tx.tweak(tw2 -> {
                     tw2.input(DDRObligationContract.ID, examplePledgeApproved);
                     return tw2.failsWith("Input DDRObligationState should have status REQUEST");
@@ -66,17 +70,22 @@ public class DenyOrCancelPledgeContractTests extends BaseObligationContractTests
     }
 
     @Test
-    public void denyPledgeShouldHaveNoOutputs() {
+    public void denyPledgeShouldHaveOneOutputPledgeRejected() {
         ledger(ledgerServices, (ledger -> {
             ledger.transaction(tx -> {
 
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.DenyDDRPledge());
-                tx.verifies();
-                tx.output(DDRObligationContract.ID, examplePledgeRequest);
-                return tx.failsWith("No outputs must be created when denying or canceling DDR Pledge");
+                tx.failsWith("1 output of type DDRObligationState must be created when denying or canceling DDR Pledge");
 
+                tx.tweak(tw -> {
+                    tw.output(DDRObligationContract.ID, examplePledgeCanceled);
+                    return tw.failsWith("Output DDRObligationState should have status REJECTED");
+                });
+
+                tx.output(DDRObligationContract.ID, examplePledgeRejected);
+                return tx.verifies();
             });
             return null;
         }));
@@ -90,10 +99,16 @@ public class DenyOrCancelPledgeContractTests extends BaseObligationContractTests
                 tx.input(DDRObligationContract.ID, examplePledgeRequest);
                 tx.command(ImmutableList.of(bankA.getPublicKey(), centralBank.getPublicKey()),
                         new DDRObligationContract.DDRObligationCommands.CancelDDRPledge());
-                tx.verifies();
-                tx.output(DDRObligationContract.ID, examplePledgeRequest);
-                return tx.failsWith("No outputs must be created when denying or canceling DDR Pledge");
 
+                tx.failsWith("1 output of type DDRObligationState must be created when denying or canceling DDR Pledge");
+
+                tx.tweak(tw -> {
+                    tw.output(DDRObligationContract.ID, examplePledgeRejected);
+                    return tw.failsWith("Output DDRObligationState should have status CANCELED");
+                });
+
+                tx.output(DDRObligationContract.ID, examplePledgeCanceled);
+                return tx.verifies();
             });
             return null;
         }));

@@ -25,8 +25,12 @@ public class BaseObligationContractTests {
     static protected final DDRObligationState examplePledgeRequest = new DDRObligationState(centralBank.getParty(), bankA.getParty(), exampleDate,
             new Amount<>(exampleAmount, exampleCurrency), bankA.getParty(), DDRObligationType.PLEDGE, DDRObligationStatus.REQUEST, "externalId");
     static protected final DDRObligationState examplePledgeApproved = new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.APPROVED).build();
+    static protected final DDRObligationState examplePledgeCanceled = new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.CANCELED).build();
+    static protected final DDRObligationState examplePledgeRejected = new DDRObligationStateBuilder(examplePledgeRequest).status(DDRObligationStatus.REJECTED).build();
     static protected final DDRObligationState exampleRedeemRequest = new DDRObligationStateBuilder(examplePledgeRequest).type(DDRObligationType.REDEEM).build();
     static protected final DDRObligationState exampleRedeemApproved = new DDRObligationStateBuilder(exampleRedeemRequest).status(DDRObligationStatus.APPROVED).build();
+    static protected final DDRObligationState exampleRedeemCanceled = new DDRObligationStateBuilder(exampleRedeemRequest).status(DDRObligationStatus.CANCELED).build();
+    static protected final DDRObligationState exampleRedeemRejected = new DDRObligationStateBuilder(exampleRedeemRequest).status(DDRObligationStatus.REJECTED).build();
     static protected final DDRObjectState exampleDDRObject = new DDRObjectStateBuilder().amount(exampleAmount).currency(exampleCurrency)
             .owner(bankA.getParty()).issuer(centralBank.getParty()).issuerDate(exampleDate).build();
     static protected final MockServices ledgerServices = new MockServices();

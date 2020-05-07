@@ -103,7 +103,7 @@ public class ApproveRedeemContractTests extends BaseObligationContractTests {
                 tx.input(DDRObjectContract.ID, exampleDDRObject);
                 tx.tweak(tw -> {
                     tw.output(DDRObligationContract.ID, new DDRObligationStateBuilder(exampleRedeemApproved).externalId("differentExternalId").build());
-                    return tw.failsWith("Input and output DDRObligationState should have same ExternalId");
+                    return tw.failsWith("Input and output DDRObligationState should have same attributes except Status");
                 });
 
                 tx.output(DDRObligationContract.ID, exampleRedeemApproved);

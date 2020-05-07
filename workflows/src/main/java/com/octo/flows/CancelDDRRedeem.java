@@ -2,7 +2,9 @@ package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.octo.contracts.DDRObligationContract;
+import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObligationState;
+import com.octo.states.DDRObligationStateBuilder;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;
 import net.corda.core.flows.*;
@@ -55,6 +57,7 @@ public class CancelDDRRedeem {
             final List<PublicKey> requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), inputState.getIssuer().getOwningKey());
             return new TransactionBuilder(inputStateAndRef.getState().getNotary())
                     .addInputState(inputStateAndRef)
+                    .addOutputState(new DDRObligationStateBuilder(inputState).status(DDRObligationStatus.CANCELED).build())
                     .addCommand(new DDRObligationContract.DDRObligationCommands.CancelDDRRedeem(), requiredSigners);
         }
 

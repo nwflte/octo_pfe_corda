@@ -70,8 +70,6 @@ public class DDRObligationContract implements Contract {
             require.using("Input DDRObligationState should have type PLEDGE", input.getType() == DDRObligationType.PLEDGE);
             require.using("Input DDRObligationState should have status REQUEST", input.getStatus() == DDRObligationStatus.REQUEST);
             require.using("Output DDRObligationState should have status APPROVED", output.getStatus() == DDRObligationStatus.APPROVED);
-            require.using("Input and output DDRObligationState should have same ExternalId",
-                    input.getExternalId().equals(output.getExternalId()));
             require.using("Input and output DDRObligationState should have same attributes except Status",
                     compareStatesAttributesExceptStatus(input, output));
             require.using("Pledged amount should be equal to total amount of issued DDR Objects",
@@ -82,12 +80,20 @@ public class DDRObligationContract implements Contract {
 
     private void verifyDenyOrCancelPledge(LedgerTransaction tx) {
         requireThat(require -> {
-            require.using("No outputs must be created when denying or canceling DDR Pledge", tx.getOutputs().isEmpty());
+            require.using("1 output of type DDRObligationState must be created when denying or canceling DDR Pledge",
+                    tx.outputsOfType(DDRObligationState.class).size() == 1);
             require.using("Only 1 input of type DDRObligationState should be consumed when denying or canceling DDR Pledge",
                     tx.getInputs().size() == 1 && tx.inputsOfType(DDRObligationState.class).size() == 1);
             DDRObligationState input = tx.inputsOfType(DDRObligationState.class).get(0);
+            DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
             require.using("Input DDRObligationState should have type PLEDGE", input.getType() == DDRObligationType.PLEDGE);
             require.using("Input DDRObligationState should have status REQUEST", input.getStatus() == DDRObligationStatus.REQUEST);
+            require.using("Input and output DDRObligationState should have same attributes except Status",
+                    compareStatesAttributesExceptStatus(input, output));
+            if(tx.getCommand(0).getValue() instanceof DDRObligationCommands.DenyDDRPledge)
+                require.using("Output DDRObligationState should have status REJECTED", output.getStatus() == DDRObligationStatus.REJECTED);
+            else
+                require.using("Output DDRObligationState should have status CANCELED", output.getStatus() == DDRObligationStatus.CANCELED);
             return null;
         });
     }
@@ -119,8 +125,6 @@ public class DDRObligationContract implements Contract {
             require.using("Input DDRObligationState should have type REDEEM", input.getType() == DDRObligationType.REDEEM);
             require.using("Input DDRObligationState should have status REQUEST", input.getStatus() == DDRObligationStatus.REQUEST);
             require.using("Output DDRObligationState should have status APPROVED", output.getStatus() == DDRObligationStatus.APPROVED);
-            require.using("Input and output DDRObligationState should have same ExternalId",
-                    input.getExternalId().equals(output.getExternalId()));
             require.using("Input and output DDRObligationState should have same attributes except Status",
                     compareStatesAttributesExceptStatus(input, output));
             require.using("Redeemed amount should be equal to total amount of consumed DDR Objects",
@@ -131,19 +135,28 @@ public class DDRObligationContract implements Contract {
 
     private void verifyDenyCancelRedeem(LedgerTransaction tx) {
         requireThat(require -> {
-            require.using("No outputs must be created when denying or canceling DDR Redeem", tx.getOutputs().isEmpty());
+            require.using("1 output of type DDRObligationState must be created when denying or canceling DDR Redeem",
+                    tx.outputsOfType(DDRObligationState.class).size() == 1);
             require.using("Only 1 input of type DDRObligationState should be consumed when denying or canceling DDR Redeem",
                     tx.getInputs().size() == 1 && tx.inputsOfType(DDRObligationState.class).size() == 1);
             DDRObligationState input = tx.inputsOfType(DDRObligationState.class).get(0);
+            DDRObligationState output = tx.outputsOfType(DDRObligationState.class).get(0);
             require.using("Input DDRObligationState should have type REDEEM", input.getType() == DDRObligationType.REDEEM);
             require.using("Input DDRObligationState should have status REQUEST", input.getStatus() == DDRObligationStatus.REQUEST);
+            require.using("Input and output DDRObligationState should have same attributes except Status",
+                    compareStatesAttributesExceptStatus(input, output));
+            if(tx.getCommand(0).getValue() instanceof DDRObligationCommands.DenyDDRRedeem)
+                require.using("Output DDRObligationState should have status REJECTED", output.getStatus() == DDRObligationStatus.REJECTED);
+            else
+                require.using("Output DDRObligationState should have status CANCELED", output.getStatus() == DDRObligationStatus.CANCELED);
+
             return null;
         });
     }
 
 
     private boolean compareStatesAttributesExceptStatus(DDRObligationState st1, DDRObligationState st2) {
-        return st1.getRequesterDate().compareTo(st2.getRequesterDate()) == 0 && st1.getRequester().equals(st2.getRequester())
+        return st1.getExternalId().equals(st2.getExternalId()) && st1.getRequesterDate().compareTo(st2.getRequesterDate()) == 0 && st1.getRequester().equals(st2.getRequester())
                 && st1.getOwner().equals(st2.getOwner()) && st1.getAmount().equals(st2.getAmount()) &&
                 st1.getIssuer().equals(st2.getIssuer()) && st1.getType().equals(st2.getType());
     }

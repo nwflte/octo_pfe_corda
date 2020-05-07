@@ -49,7 +49,7 @@ public class ObligationServiceVaultImpl implements ObligationService {
     public SignedTransaction createPledge(long amount) throws ExecutionException, InterruptedException {
         if (amount <= 0) throw new NegativeOrNullAmountException(amount);
         return proxy
-                .startTrackedFlowDynamic(RequestDDRPledge.Initiator.class, new Amount<>(amount, MAD), new Date())
+                .startTrackedFlowDynamic(RequestDDRPledge.Initiator.class, new Amount<>(amount, MAD))
                 .getReturnValue().get();
     }
 
@@ -72,7 +72,7 @@ public class ObligationServiceVaultImpl implements ObligationService {
     public SignedTransaction createRedeem(long amount) throws ExecutionException, InterruptedException {
         if (amount <= 0) throw new NegativeOrNullAmountException(amount);
         return proxy
-                .startTrackedFlowDynamic(RequestDDRRedeem.Initiator.class, new Amount<>(amount, MAD), new Date())
+                .startTrackedFlowDynamic(RequestDDRRedeem.Initiator.class, new Amount<>(amount, MAD))
                 .getReturnValue().get();
     }
 

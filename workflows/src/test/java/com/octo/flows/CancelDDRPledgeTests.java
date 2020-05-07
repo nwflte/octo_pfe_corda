@@ -54,7 +54,7 @@ public class CancelDDRPledgeTests {
     public void setup() throws ExecutionException, InterruptedException {
         network.runNetwork();
         RequestDDRPledge.Initiator flow = new RequestDDRPledge.Initiator(
-                new Amount<Currency>(1000, Currency.getInstance("MAD")), new Date(new Date().getTime() - 86400000));
+                new Amount<Currency>(1000, Currency.getInstance("MAD")));
 
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
@@ -108,7 +108,7 @@ public class CancelDDRPledgeTests {
                     .getTransaction(signedTx.getId()).toLedgerTransaction(node.getServices());
             List<TransactionState<ContractState>> txOutputs = recordedTx.getOutputs();
             List<ContractState> txInputs = recordedTx.getInputStates();
-            assertEquals(0, txOutputs.size());
+            assertEquals(1, txOutputs.size());
             assertEquals(1, txInputs.size());
 
             DDRObligationState consumedState = (DDRObligationState) txInputs.get(0);

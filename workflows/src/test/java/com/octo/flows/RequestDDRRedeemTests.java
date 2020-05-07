@@ -59,7 +59,7 @@ public class RequestDDRRedeemTests {
     @Test
     public void flowRecordsATransactionInBothPartiesTransactionStorages() throws ExecutionException, InterruptedException {
         RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(
-                new Amount<>(1000, Currency.getInstance("MAD")), new Date(new Date().getTime() - 86400000));
+                new Amount<>(1000, Currency.getInstance("MAD")));
 
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
@@ -73,7 +73,7 @@ public class RequestDDRRedeemTests {
     public void negativeAmount_ThrowsException() throws Exception {
         exception.expect(instanceOf(IllegalArgumentException.class));
         RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(
-                new Amount<>(-1, Currency.getInstance("MAD")), new Date());
+                new Amount<>(-1, Currency.getInstance("MAD")));
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
         future.get();
@@ -82,7 +82,7 @@ public class RequestDDRRedeemTests {
     @Test
     public void signedTransactionReturnedByTheFlowIsSignedByTheInitiator() throws Exception {
         RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(
-                new Amount<>(1, Currency.getInstance("MAD")), new Date());
+                new Amount<>(1, Currency.getInstance("MAD")));
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
 
@@ -93,7 +93,7 @@ public class RequestDDRRedeemTests {
     @Test
     public void signedTransactionReturnedByTheFlowIsSignedByTheAcceptor() throws Exception {
         RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(
-                new Amount<>(1, Currency.getInstance("MAD")), new Date());
+                new Amount<>(1, Currency.getInstance("MAD")));
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
 
@@ -104,8 +104,7 @@ public class RequestDDRRedeemTests {
     @Test
     public void recordedTransactionHasNoInputsAndASingleOutput() throws Exception {
         Amount<Currency> amount = new Amount<>(1, Currency.getInstance("MAD"));
-        Date requesterDate = new Date();
-        RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(amount, requesterDate);
+        RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(amount);
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
         SignedTransaction signedTx = future.get();
@@ -122,7 +121,6 @@ public class RequestDDRRedeemTests {
             assertEquals(a.getInfo().getLegalIdentities().get(0), recordedState.getOwner());
             assertEquals(a.getInfo().getLegalIdentities().get(0), recordedState.getRequester());
             assertEquals(bc.getInfo().getLegalIdentities().get(0), recordedState.getIssuer());
-            assertEquals(requesterDate, recordedState.getRequesterDate());
             assertEquals(DDRObligationType.REDEEM, recordedState.getType());
             assertEquals(DDRObligationStatus.REQUEST, recordedState.getStatus());
         }
@@ -131,8 +129,7 @@ public class RequestDDRRedeemTests {
     @Test
     public void flowRecordsTheCorrectDDRObligationInBothPartiesVaults() throws Exception {
         Amount<Currency> amount = new Amount<>(1, Currency.getInstance("MAD"));
-        Date requesterDate = new Date();
-        RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(amount, requesterDate);
+        RequestDDRRedeem.Initiator flow = new RequestDDRRedeem.Initiator(amount);
         CordaFuture<SignedTransaction> future = a.startFlow(flow);
         network.runNetwork();
         future.get();
@@ -146,7 +143,6 @@ public class RequestDDRRedeemTests {
                 assertEquals(amount, recordedState.getAmount());
                 assertEquals(a.getInfo().getLegalIdentities().get(0), recordedState.getOwner());
                 assertEquals(a.getInfo().getLegalIdentities().get(0), recordedState.getRequester());
-                assertEquals(requesterDate, recordedState.getRequesterDate());
                 assertEquals(DDRObligationType.REDEEM, recordedState.getType());
                 assertEquals(DDRObligationStatus.REQUEST, recordedState.getStatus());
                 return null;
