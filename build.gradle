@@ -72,7 +72,12 @@ subprojects {
             csv.enabled false
             html.destination file("${buildDir}/jacocoHtml")
         }
+        executionData = files('build/jacoco/test.exec')
     }
+}
+
+test {
+    maxHeapSize = "1024m"
 }
 
 def publishedProjects = subprojects.findAll()
@@ -94,6 +99,7 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
         html.enabled = true // human readable
         xml.enabled = true // required by coveralls
     }
+    executionData = files('build/jacoco/test.exec')
 }
 
 
