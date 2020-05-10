@@ -77,7 +77,8 @@ subprojects {
 }
 
 test {
-    maxHeapSize = "1024m"
+    jvmArgs('-XX:+UseG1GC', '-Xmx2048m')
+    maxHeapSize = "2048m"
 }
 
 def publishedProjects = subprojects.findAll()
@@ -216,7 +217,7 @@ task prepareDockerNodes(type: net.corda.plugins.Dockerform, dependsOn: ['jar']) 
     }
     node {
         name "O=BankB,L=New York,C=US"
-        p2pAddress "bankb:1000"
+        p2pAddress "bankb:10002"
         rpcSettings {
             address("bankb:10003")
             adminAddress("bankb:10043")

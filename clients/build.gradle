@@ -1,7 +1,5 @@
-//apply plugin: 'org.springframework.boot'
 plugins {
     id 'org.springframework.boot'
-    id "io.spring.dependency-management"
 }
 
 sourceSets {
@@ -28,12 +26,13 @@ dependencies {
     compile project(":contracts")
     compile project(":workflows")
 
+    // Spring boot dependencies
+    implementation platform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version")
     compile("org.springframework.boot:spring-boot-starter-websocket:$spring_boot_version")
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    //implementation "org.springframework.boot:spring-boot-starter-security:$spring_boot_version"
+    implementation "org.springframework.boot:spring-boot-starter-security:$spring_boot_version"
 
     // Keycloak
-    implementation 'org.keycloak:keycloak-spring-boot-starter'
+    compile "org.keycloak:keycloak-spring-security-adapter:10.0.0"
 
     // Logging
     compile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
@@ -41,11 +40,6 @@ dependencies {
     compile "org.slf4j:jul-to-slf4j:$slf4j_version"
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.keycloak.bom:keycloak-adapter-bom:9.0.2"
-    }
-}
 
 springBoot {
     mainClassName = "com.octo.Server"
