@@ -1,4 +1,4 @@
-package com.octo.services;
+package com.octo.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

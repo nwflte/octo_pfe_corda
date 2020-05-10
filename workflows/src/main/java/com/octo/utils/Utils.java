@@ -1,8 +1,9 @@
-package com.octo.flows;
+package com.octo.utils;
 
 import co.paralleluniverse.fibers.Suspendable;
 import com.octo.states.DDRObjectState;
 import com.octo.states.DDRObligationState;
+import com.octo.utils.DDRSelector;
 import net.corda.core.contracts.*;
 import net.corda.core.flows.CollectSignaturesFlow;
 import net.corda.core.flows.FlowException;
