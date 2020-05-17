@@ -1,5 +1,6 @@
-package com.octo.states;
+package com.octo.builders;
 
+import com.octo.states.InterBankTransferState;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.Party;
@@ -11,14 +12,14 @@ import java.util.Date;
 @CordaSerializable
 public class InterBankTransferStateBuilder {
 
-    String senderRIB;
-    String receiverRIB;
-    Party senderBank;
-    Party receiverBank;
-    Amount<Currency> amount;
-    Date executionDate;
-    String externalId;
-    UniqueIdentifier linearId;
+    public String senderRIB;
+    public String receiverRIB;
+    public Party senderBank;
+    public Party receiverBank;
+    public Amount<Currency> amount;
+    public Date executionDate;
+    public String externalId;
+    public UniqueIdentifier linearId;
 
     public InterBankTransferStateBuilder() {
 

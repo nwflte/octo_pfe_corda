@@ -1,8 +1,5 @@
-package com.octo.services;
+package com.octo.corda_services;
 
-import co.paralleluniverse.fibers.Suspendable;
-import com.octo.flows.SyncIdentitiesFlow;
-import net.corda.core.concurrent.CordaFuture;
 import net.corda.core.identity.Party;
 import net.corda.core.node.AppServiceHub;
 import net.corda.core.node.services.CordaService;
@@ -12,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @CordaService
 public class RIBService  extends SingletonSerializeAsToken {

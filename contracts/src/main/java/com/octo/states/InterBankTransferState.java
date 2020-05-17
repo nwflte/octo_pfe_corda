@@ -1,5 +1,6 @@
 package com.octo.states;
 
+import com.octo.builders.InterBankTransferStateBuilder;
 import com.octo.contracts.InterBankTransferContract;
 import com.octo.schemas.InterBankTransferSchemaV1;
 import com.octo.schemas.PersistentInterBankTransfer;

@@ -1,8 +1,8 @@
 package com.octo.contracts;
 
 import com.google.common.collect.ImmutableList;
-import com.octo.states.DDRObjectStateBuilder;
-import com.octo.states.DDRObligationStateBuilder;
+import com.octo.builders.DDRObjectStateBuilder;
+import com.octo.builders.DDRObligationStateBuilder;
 import org.junit.Test;
 
 import static net.corda.testing.node.NodeTestUtils.ledger;

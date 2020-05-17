@@ -1,4 +1,4 @@
-package com.octo.services;
+package com.octo.corda_services;
 
 import net.corda.core.node.ServiceHub;
 import net.corda.core.node.services.CordaService;

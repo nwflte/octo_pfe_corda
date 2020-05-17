@@ -2,9 +2,9 @@ package com.octo.contracts;
 
 import com.google.common.collect.ImmutableList;
 import com.octo.states.DDRObjectState;
-import com.octo.states.DDRObjectStateBuilder;
+import com.octo.builders.DDRObjectStateBuilder;
 import com.octo.states.InterBankTransferState;
-import com.octo.states.InterBankTransferStateBuilder;
+import com.octo.builders.InterBankTransferStateBuilder;
 import net.corda.core.contracts.Amount;
 import org.junit.Test;
 

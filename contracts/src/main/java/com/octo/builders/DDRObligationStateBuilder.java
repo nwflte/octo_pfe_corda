@@ -1,7 +1,8 @@
-package com.octo.states;
+package com.octo.builders;
 
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
+import com.octo.states.DDRObligationState;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.UniqueIdentifier;
 import net.corda.core.identity.Party;
@@ -13,15 +14,15 @@ import java.util.Date;
 @CordaSerializable
 public class DDRObligationStateBuilder {
 
-    Party issuer;
-    Party requester;
-    Date requesterDate;
-    Amount<Currency> amount;
-    Party owner;
-    DDRObligationType type;
-    DDRObligationStatus status;
-    String externalId;
-    UniqueIdentifier linearId;
+    public Party issuer;
+    public Party requester;
+    public Date requesterDate;
+    public Amount<Currency> amount;
+    public Party owner;
+    public DDRObligationType type;
+    public DDRObligationStatus status;
+    public String externalId;
+    public UniqueIdentifier linearId;
 
     public DDRObligationStateBuilder() {
 

@@ -1,5 +1,6 @@
 package com.octo.states;
 
+import com.octo.builders.DDRObjectStateBuilder;
 import com.octo.contracts.DDRObjectContract;
 import net.corda.core.contracts.*;
 import net.corda.core.identity.AbstractParty;

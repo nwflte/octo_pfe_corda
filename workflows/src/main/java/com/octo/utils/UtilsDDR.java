@@ -1,15 +1,13 @@
 package com.octo.utils;
 
 import com.octo.states.DDRObjectState;
-import com.octo.states.DDRObjectStateBuilder;
+import com.octo.builders.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationState;
 import net.corda.core.contracts.Amount;
 
-import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;

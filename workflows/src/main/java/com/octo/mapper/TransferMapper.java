@@ -1,7 +1,7 @@
-package com.octo.dto;
+package com.octo.mapper;
 
 import com.octo.dto.BankTransferDTO;
-import com.octo.dto.VirementStatus;
+import com.octo.enums.VirementStatus;
 import com.octo.states.InterBankTransferState;
 
 import java.math.BigDecimal;

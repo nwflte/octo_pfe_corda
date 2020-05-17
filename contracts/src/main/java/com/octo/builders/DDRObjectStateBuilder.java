@@ -1,5 +1,6 @@
-package com.octo.states;
+package com.octo.builders;
 
+import com.octo.states.DDRObjectState;
 import net.corda.core.identity.Party;
 
 import java.util.Currency;
@@ -7,11 +8,11 @@ import java.util.Date;
 
 public class DDRObjectStateBuilder {
 
-    Party issuer;
-    Date issuerDate;
-    long amount;
-    Currency currency;
-    Party owner;
+    public Party issuer;
+    public Date issuerDate;
+    public long amount;
+    public Currency currency;
+    public Party owner;
 
     public DDRObjectStateBuilder() {
 

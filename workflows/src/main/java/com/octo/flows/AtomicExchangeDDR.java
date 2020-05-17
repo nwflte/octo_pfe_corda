@@ -1,8 +1,9 @@
 package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
+import com.octo.builders.DDRObjectStateBuilder;
 import com.octo.contracts.InterBankTransferContract;
-import com.octo.services.RIBService;
+import com.octo.corda_services.RIBService;
 import com.octo.states.*;
 import com.octo.utils.Utils;
 import net.corda.core.contracts.Amount;
