@@ -1,0 +1,74 @@
+version: '3.0'  
+
+services:
+
+  notary: 
+    image: corda/corda-zulu-java1.8-4.4
+    container_name: notary 
+    ports:
+      - "10001:10201"
+      - "2001:2222"
+    volumes:
+      - ./Notary/node.conf:/etc/corda/node.conf
+      - ./Notary/certificates:/opt/corda/certificates
+      - ./Notary/persistence:/opt/corda/persistence
+      - ./Notary/logs:/opt/corda/logs
+      - ./shared/cordapps:/opt/corda/cordapps
+      - ./shared/node-infos:/opt/corda/additional-node-infos
+      - ./shared/network-parameters:/opt/corda/network-parameters
+    depends_on:
+      - rabbitmq
+
+  banka: 
+    image: corda/corda-zulu-java1.8-4.4
+    container_name: banka 
+    ports:
+      - "10002:10201"
+      - "2002:2222"
+    volumes:
+      - ./BankA/node.conf:/etc/corda/node.conf
+      - ./BankA/certificates:/opt/corda/certificates
+      - ./BankA/persistence:/opt/corda/persistence
+      - ./BankA/logs:/opt/corda/logs
+      - ./shared/cordapps:/opt/corda/cordapps
+      - ./shared/node-infos:/opt/corda/additional-node-infos
+      - ./shared/network-parameters:/opt/corda/network-parameters 
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # bankb: 
+  #   image: corda/corda-zulu-java1.8-4.4
+  #   container_name: bankb 
+  #   ports:
+  #     - "10003:10201"
+  #     - "2003:2222"
+  #   volumes:
+  #     - ./BankB/node.conf:/etc/corda/node.conf
+  #     - ./BankB/certificates:/opt/corda/certificates
+  #     - ./BankB/persistence:/opt/corda/persistence
+  #     - ./BankB/logs:/opt/corda/logs
+  #     - ./shared/cordapps:/opt/corda/cordapps
+  #     - ./shared/node-infos:/opt/corda/additional-node-infos
+  #     - ./shared/network-parameters:/opt/corda/network-parameters 
+
+
+  # centralbank: 
+  #   image: corda/corda-zulu-java1.8-4.4
+  #   container_name: centralbank 
+  #   ports:
+  #     - "10004:10201"
+  #     - "2004:2222"
+  #   volumes:
+  #     - ./CentralBank/node.conf:/etc/corda/node.conf
+  #     - ./CentralBank/certificates:/opt/corda/certificates
+  #     - ./CentralBank/persistence:/opt/corda/persistence
+  #     - ./CentralBank/logs:/opt/corda/logs
+  #     - ./shared/cordapps:/opt/corda/cordapps
+  #     - ./shared/node-infos:/opt/corda/additional-node-infos
+  #     - ./shared/network-parameters:/opt/corda/network-parameters 
