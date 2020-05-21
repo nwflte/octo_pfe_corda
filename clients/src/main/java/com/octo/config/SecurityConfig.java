@@ -71,7 +71,9 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {
+        // TODO Set appropriate roles
         http
+                .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
                 .and()
@@ -80,7 +82,8 @@ public class SecurityConfig extends KeycloakWebSecurityConfigurerAdapter
                 .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/**").hasRole("USER")
+                //.antMatchers("/api/**").hasRole("USER")
+                .antMatchers("/api/**").hasAnyRole("BANK", "CENTRALBANK", "USER")
                 .anyRequest().denyAll();
     }
 

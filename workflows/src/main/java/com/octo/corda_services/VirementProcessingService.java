@@ -10,7 +10,6 @@ import com.octo.states.InterBankTransferState;
 import com.octo.states.IntraBankTransferState;
 import com.rabbitmq.client.*;
 import net.corda.core.contracts.Amount;
-import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.node.AppServiceHub;
 import net.corda.core.node.services.CordaService;
@@ -48,15 +47,15 @@ public class VirementProcessingService extends SingletonSerializeAsToken {
     private Channel channel;
     private final AppServiceHub serviceHub;
     private final Party thisParty;
-    private final Party bankB;
     private final ConnectionFactory factory = new ConnectionFactory();
-    private final Connection conn = factory.newConnection();
+    private final Connection conn;
 
     public VirementProcessingService(AppServiceHub serviceHub) throws IOException, TimeoutException {
         logger.info("Init virement processing service");
         this.serviceHub = serviceHub;
         this.thisParty = serviceHub.getMyInfo().getLegalIdentities().get(0);
-        this.bankB = serviceHub.getIdentityService().wellKnownPartyFromX500Name(CordaX500Name.parse("O=BankB,L=New York,C=US"));
+        factory.setVirtualHost(thisParty.getName().getOrganisation().toLowerCase());
+        conn = factory.newConnection();
         if (thisParty.getName().getOrganisation().equals("BankA"))
             serviceHub.register(AppServiceHub.SERVICE_PRIORITY_LOW, new MyServiceLifeCycleObserver());
     }
@@ -195,3 +194,4 @@ public class VirementProcessingService extends SingletonSerializeAsToken {
         }
     }
 }
+
