@@ -15,7 +15,6 @@ import net.corda.core.node.services.Vault;
 import net.corda.core.transactions.SignedTransaction;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +48,7 @@ public class ObligationServiceVaultImpl implements ObligationService {
     public SignedTransaction createPledge(long amount) throws ExecutionException, InterruptedException {
         if (amount <= 0) throw new NegativeOrNullAmountException(amount);
         return proxy
-                .startTrackedFlowDynamic(RequestDDRPledge.Initiator.class, new Amount<>(amount, MAD))
+                .startTrackedFlowDynamic(RequestDDRPledge.Initiator.class, new Amount<>(amount*100, MAD))
                 .getReturnValue().get();
     }
 
@@ -72,7 +71,7 @@ public class ObligationServiceVaultImpl implements ObligationService {
     public SignedTransaction createRedeem(long amount) throws ExecutionException, InterruptedException {
         if (amount <= 0) throw new NegativeOrNullAmountException(amount);
         return proxy
-                .startTrackedFlowDynamic(RequestDDRRedeem.Initiator.class, new Amount<>(amount, MAD))
+                .startTrackedFlowDynamic(RequestDDRRedeem.Initiator.class, new Amount<>(amount*100, MAD))
                 .getReturnValue().get();
     }
 

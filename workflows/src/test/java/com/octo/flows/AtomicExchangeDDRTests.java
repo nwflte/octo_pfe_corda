@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.octo.states.DDRObligationState;
 import net.corda.core.concurrent.CordaFuture;
 import net.corda.core.contracts.Amount;
-import net.corda.core.contracts.InsufficientBalanceException;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;

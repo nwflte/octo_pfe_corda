@@ -1,10 +1,10 @@
 package com.octo.flows;
 
 import co.paralleluniverse.fibers.Suspendable;
+import com.octo.builders.DDRObligationStateBuilder;
 import com.octo.contracts.DDRObligationContract;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.states.DDRObligationState;
-import com.octo.builders.DDRObligationStateBuilder;
 import com.octo.utils.Utils;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.SecureHash;

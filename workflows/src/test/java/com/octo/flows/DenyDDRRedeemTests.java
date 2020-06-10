@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.Currency;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 

@@ -1,11 +1,11 @@
 package com.octo.contracts;
 
+import com.octo.builders.DDRObjectStateBuilder;
+import com.octo.builders.DDRObligationStateBuilder;
 import com.octo.enums.DDRObligationStatus;
 import com.octo.enums.DDRObligationType;
 import com.octo.states.DDRObjectState;
-import com.octo.builders.DDRObjectStateBuilder;
 import com.octo.states.DDRObligationState;
-import com.octo.builders.DDRObligationStateBuilder;
 import net.corda.core.contracts.Amount;
 import net.corda.core.identity.CordaX500Name;
 import net.corda.testing.core.TestIdentity;

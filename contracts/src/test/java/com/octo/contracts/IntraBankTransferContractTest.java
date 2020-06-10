@@ -1,7 +1,7 @@
 package com.octo.contracts;
 
-import com.octo.states.IntraBankTransferState;
 import com.octo.builders.IntraBankTransferStateBuilder;
+import com.octo.states.IntraBankTransferState;
 import net.corda.core.contracts.Amount;
 import org.junit.Test;
 

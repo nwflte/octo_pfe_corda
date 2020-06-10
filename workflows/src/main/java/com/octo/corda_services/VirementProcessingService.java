@@ -3,9 +3,9 @@ package com.octo.corda_services;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.octo.dto.BankTransferDTO;
-import com.octo.mapper.TransferMapper;
 import com.octo.flows.AtomicExchangeDDR;
 import com.octo.flows.RecordIntraBankTransfer;
+import com.octo.mapper.TransferMapper;
 import com.octo.states.InterBankTransferState;
 import com.octo.states.IntraBankTransferState;
 import com.rabbitmq.client.*;
@@ -48,16 +48,17 @@ public class VirementProcessingService extends SingletonSerializeAsToken {
     private final AppServiceHub serviceHub;
     private final Party thisParty;
     private final ConnectionFactory factory = new ConnectionFactory();
-    private final Connection conn;
+    private Connection conn;
 
     public VirementProcessingService(AppServiceHub serviceHub) throws IOException, TimeoutException {
         logger.info("Init virement processing service");
         this.serviceHub = serviceHub;
         this.thisParty = serviceHub.getMyInfo().getLegalIdentities().get(0);
-        factory.setVirtualHost(thisParty.getName().getOrganisation().toLowerCase());
-        conn = factory.newConnection();
-        if (thisParty.getName().getOrganisation().equals("BankA"))
+        if (!thisParty.getName().getOrganisation().equals("Notary")){
+            factory.setVirtualHost(thisParty.getName().getOrganisation().toLowerCase());
+            conn = factory.newConnection();
             serviceHub.register(AppServiceHub.SERVICE_PRIORITY_LOW, new MyServiceLifeCycleObserver());
+        }
     }
 
     class MyServiceLifeCycleObserver implements ServiceLifecycleObserver {

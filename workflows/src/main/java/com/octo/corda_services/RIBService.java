@@ -28,7 +28,7 @@ public class RIBService  extends SingletonSerializeAsToken {
         // TODO This must be a constant, or retrieved from config file, but now the class it's used for all nodes so we do ifs
         if(ourOrgName.equals("BankA")) return "007";
         if(ourOrgName.equals("CentralBank")) return "";
-        if(ourOrgName.equals("Notary Service")) return "";
+        if(ourOrgName.equals("Notary")) return "";
         return "008";
     }
 

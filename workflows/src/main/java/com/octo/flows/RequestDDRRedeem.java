@@ -19,7 +19,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
 
 public class RequestDDRRedeem {
 

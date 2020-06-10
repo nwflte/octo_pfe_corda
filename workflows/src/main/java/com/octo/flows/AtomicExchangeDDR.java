@@ -4,7 +4,8 @@ import co.paralleluniverse.fibers.Suspendable;
 import com.octo.builders.DDRObjectStateBuilder;
 import com.octo.contracts.InterBankTransferContract;
 import com.octo.corda_services.RIBService;
-import com.octo.states.*;
+import com.octo.states.DDRObjectState;
+import com.octo.states.InterBankTransferState;
 import com.octo.utils.Utils;
 import net.corda.core.contracts.Amount;
 import net.corda.core.contracts.StateAndRef;
@@ -18,7 +19,10 @@ import net.corda.core.utilities.ProgressTracker;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.PublicKey;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
 
 public class AtomicExchangeDDR {
 
@@ -78,7 +82,7 @@ public class AtomicExchangeDDR {
             SignedTransaction fullySignedTx = subFlow(Utils.verifyAndCollectSignatures(txBuilder, getServiceHub(),
                     centralBankSession, receiverBankSession));
 
-            return subFlow(new FinalityFlow(fullySignedTx, Arrays.asList(centralBankSession, receiverBankSession), StatesToRecord.ALL_VISIBLE));
+            return subFlow(new FinalityFlow(fullySignedTx, Arrays.asList(centralBankSession, receiverBankSession), StatesToRecord.ONLY_RELEVANT));
         }
 
         @Suspendable
@@ -143,7 +147,10 @@ public class AtomicExchangeDDR {
         public SignedTransaction call() throws FlowException {
             // Responder flow logic goes here.
             final SecureHash txId = subFlow(new CheckTransactionAndSignFlow(counterpartySession, SignTransactionFlow.Companion.tracker())).getId();
+            if(getOurIdentity().getName().getOrganisation().equals("CentralBank"))
+                return subFlow(new ReceiveFinalityFlow(counterpartySession, txId, StatesToRecord.ALL_VISIBLE));
             return subFlow(new ReceiveFinalityFlow(counterpartySession, txId));
+            //return subFlow(new ReceiveFinalityFlow(counterpartySession));
         }
 
         private static class CheckTransactionAndSignFlow extends SignTransactionFlow {
