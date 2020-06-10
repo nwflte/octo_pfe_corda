@@ -85,3 +85,4 @@ Use IntelliJ and JDK 1.8 (Higher versions might work too, but it's recommanded t
 
 Or run from command line : `gradlew test`.
 
+### Note : Flow tests will not work after adding VirementProcessingService,Corda loads the class and the connection to RabbitMQ fails; comment out the annotation @CordaService on the class to pass the flow tests. 
